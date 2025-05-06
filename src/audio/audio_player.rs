@@ -22,7 +22,7 @@ impl AudioPlayer {
 		source_factory: F,
 	) -> eyre::Result<AudioPlayer>
 	where
-		F: FnMut() -> eyre::Result<S> + 'static,
+		F: Fn() -> eyre::Result<S> + 'static,
 		S: Source + Send + 'static,
 		f32: FromSample<S::Item>,
 		S::Item: Sample + Send,
@@ -39,7 +39,7 @@ impl AudioPlayer {
 
 		let controls_clone = controls.clone();
 
-		let mut player = AudioPlayer {
+		let player = AudioPlayer {
 			controls,
 			playback_starter: Box::new(PlaybackStarter::new(
 				stream.clone(),
@@ -116,8 +116,12 @@ impl AudioPlayer {
 	///
 	/// When seeking beyond the end of a source this
 	/// function might cause a panic if the duration of the source is not known.
-	pub fn seek(&self, pos: Duration) {
+	pub fn seek(&self, pos: Duration) -> eyre::Result<()> {
+		if self.controls.stopped.fetch_and(false, Ordering::SeqCst) {
+			self.playback_starter.start_playback()?;
+		}
 		*self.controls.seek.lock().unwrap() = Some(pos);
+		Ok(())
 	}
 
 	/// Pauses or resumes playback
@@ -138,14 +142,6 @@ impl AudioPlayer {
 	/// Gets if a player is stopped
 	pub fn is_stopped(&self) -> bool {
 		self.controls.stopped.load(Ordering::SeqCst)
-	}
-
-	/// Restarts playback if it was stopped
-	pub fn restart_or_ignore(&mut self) -> eyre::Result<()> {
-		if self.controls.stopped.fetch_and(false, Ordering::SeqCst) {
-			self.playback_starter.start_playback()?;
-		}
-		Ok(())
 	}
 
 	/// Returns the position of the sound that's being played.
