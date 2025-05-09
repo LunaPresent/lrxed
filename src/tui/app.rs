@@ -75,7 +75,7 @@ impl InputHandler for App {
 		if !consumed {
 			match (key.code, key.modifiers) {
 				// global keys here
-				state.config.keys.quit => {
+				k if k == state.config.keys.quit => {
 					self.should_quit = true;
 					Ok(true)
 				}
@@ -94,7 +94,6 @@ impl StatefulWidget for App {
 	where
 		Self: Sized,
 	{
-		// Block::new().style(THEME.root).render(area, buf);
 		match self.active_view {
 			View::FileTree => FileTreeView.render(area, buf, state),
 			View::Editor => EditorView.render(area, buf, state),

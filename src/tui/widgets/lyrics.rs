@@ -21,9 +21,10 @@ impl StatefulWidget for LyricsWidget {
 	where
 		Self: Sized,
 	{
+		state.lyrics.bufsize.y = area.height as usize;
 		let rows = cmp::min(
 			area.height as usize,
-			state.lyrics_state.lyrics.lines().len() - state.lyrics_state.scroll_y,
+			state.lyrics.lyrics.lines().len() - state.lyrics.scroll_y,
 		);
 		let layout = Layout::vertical(
 			iter::repeat_n(Constraint::Length(1), rows).chain(iter::once(Constraint::Fill(1))),
@@ -32,15 +33,15 @@ impl StatefulWidget for LyricsWidget {
 		let areas = layout.split(area);
 		let (_fill, line_areas) = areas.split_last().unwrap();
 		let lyrics_lines = state
-			.lyrics_state
+			.lyrics
 			.lyrics
 			.lines()
 			.iter()
 			.enumerate()
-			.skip(state.lyrics_state.scroll_y)
+			.skip(state.lyrics.scroll_y)
 			.take(rows);
 		for ((line_num, lyric_line), &line_area) in lyrics_lines.zip(line_areas) {
-			let style = if line_num == state.lyrics_state.cursor.y {
+			let style = if line_num == state.lyrics.cursor.y {
 				state.config.theme.cursorline
 			} else {
 				Style::default()
