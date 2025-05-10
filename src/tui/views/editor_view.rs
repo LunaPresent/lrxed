@@ -1,3 +1,8 @@
+use std::{
+	cmp::{max, min},
+	time::Duration,
+};
+
 use color_eyre::eyre;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -46,6 +51,110 @@ impl InputHandler for EditorView {
 					state.lyrics.lyrics.lines().len() - 1,
 					state.config.settings.scrolloff,
 				);
+				Ok(true)
+			}
+			k if k == state.config.keys.seek_backwards => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let pos = player.position();
+				player.seek(
+					pos - min(
+						Duration::from_secs_f32(state.config.settings.jump_seconds),
+						pos,
+					),
+				)?;
+				Ok(true)
+			}
+			k if k == state.config.keys.seek_forwards => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				player.seek(
+					player.position() + Duration::from_secs_f32(state.config.settings.jump_seconds),
+				)?;
+				Ok(true)
+			}
+			k if k == state.config.keys.toggle_pause => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				player.set_paused(!player.is_paused());
+				Ok(true)
+			}
+			k if k == state.config.keys.volume_down => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let volume = (player.volume() * 100. + 0.5) as i16 - 10;
+				player.set_volume(max(volume, 0) as f32 / 100.);
+				Ok(true)
+			}
+			k if k == state.config.keys.volume_up => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let volume = (player.volume() * 100. + 0.5) as i16 + 10;
+				player.set_volume(min(volume, 100) as f32 / 100.);
+				Ok(true)
+			}
+			k if k == state.config.keys.volume_down_slightly => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let volume = (player.volume() * 100. + 0.5) as i16 - 1;
+				player.set_volume(max(volume, 0) as f32 / 100.);
+				Ok(true)
+			}
+			k if k == state.config.keys.volume_up_slightly => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let volume = (player.volume() * 100. + 0.5) as i16 + 1;
+				player.set_volume(min(volume, 100) as f32 / 100.);
+				Ok(true)
+			}
+			k if k == state.config.keys.speed_down => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let speed = (player.speed() * 20. + 0.5) as i16 - 1;
+				player.set_speed(max(speed, 10) as f32 / 20.);
+				Ok(true)
+			}
+			k if k == state.config.keys.speed_up => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				let speed = (player.speed() * 20. + 0.5) as i16 + 1;
+				player.set_speed(min(speed, 40) as f32 / 20.);
+				Ok(true)
+			}
+			k if k == state.config.keys.speed_reset => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				player.set_speed(1.);
 				Ok(true)
 			}
 			(KeyCode::Char(c @ '0'..='9'), KeyModifiers::NONE) => {

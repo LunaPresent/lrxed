@@ -47,11 +47,10 @@ Lyrics editor view:
 - [ ] l: cursor right
 - [ ] J: append next line to current
 - [ ] K: split line at cursor
-- [ ] H: seek backwards
-- [ ] L: seek forwards
+- [x] H: seek backwards
+- [x] L: seek forwards
 - [x] \[0-9]: seek to \[0-9]0%
-- [ ] r: \[r]esume/pause
-- [ ] R: \[R]estart
+- [x] r: \[r]esume/pause
 - [x] g: \[g]o to first line
 - [x] G: \[G]o to last line
 - [ ] w: cursor to next \[w]ord
@@ -82,10 +81,10 @@ Lyrics editor view:
 - [ ] O: insert new line before
 - [ ] a: toggle \[a]utoscroll
 - [ ] A: toggle \[A]utoseek (play from newly selected line)
-- [ ] [: volume down
-- [ ] ]: volume up
-- [ ] {: volume down
-- [ ] }: volume up
-- [ ] -: speed down
-- [ ] +: speed up
-- [ ] =: reset playback speed
+- [x] [: volume down
+- [x] ]: volume up
+- [x] {: volume down slightly
+- [x] }: volume up slightly
+- [x] -: speed down
+- [x] +: speed up
+- [x] =: reset playback speed
