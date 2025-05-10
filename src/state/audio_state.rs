@@ -11,10 +11,7 @@ pub struct AudioState {
 impl AudioState {
 	pub fn seek_relative_or_ignore(&self, relative_position: f32) -> eyre::Result<()> {
 		if let Some(player) = self.audio_player.as_ref() {
-			let target_pos = player
-				.duration()
-				.unwrap()
-				.mul_f32(relative_position.min(1.).max(0.));
+			let target_pos = player.duration().mul_f32(relative_position.min(1.).max(0.));
 			player.seek(target_pos)?;
 		}
 

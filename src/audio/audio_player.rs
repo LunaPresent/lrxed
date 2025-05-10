@@ -22,7 +22,7 @@ impl AudioPlayer {
 		source_factory: F,
 	) -> eyre::Result<AudioPlayer>
 	where
-		F: Fn() -> eyre::Result<S> + 'static,
+		F: Fn() -> eyre::Result<(S, Duration)> + 'static,
 		S: Source + Send + 'static,
 		f32: FromSample<S::Item>,
 		S::Item: Sample + Send,
@@ -34,7 +34,7 @@ impl AudioPlayer {
 			speed: Mutex::new(1.0),
 			seek: Mutex::new(None),
 			position: Mutex::new(Duration::ZERO),
-			duration: Mutex::new(None),
+			duration: Mutex::new(Duration::ZERO),
 		});
 
 		let controls_clone = controls.clone();
@@ -117,10 +117,16 @@ impl AudioPlayer {
 	/// When seeking beyond the end of a source this
 	/// function might cause a panic if the duration of the source is not known.
 	pub fn seek(&self, pos: Duration) -> eyre::Result<()> {
-		if self.controls.stopped.fetch_and(false, Ordering::SeqCst) {
-			self.playback_starter.start_playback()?;
+		let duration = self.duration();
+		if duration <= pos {
+			self.stop();
+			*self.controls.position.lock().unwrap() = duration;
+		} else {
+			if self.controls.stopped.fetch_and(false, Ordering::SeqCst) {
+				self.playback_starter.start_playback()?;
+			}
+			*self.controls.seek.lock().unwrap() = Some(pos);
 		}
-		*self.controls.seek.lock().unwrap() = Some(pos);
 		Ok(())
 	}
 
@@ -155,7 +161,7 @@ impl AudioPlayer {
 		*self.controls.position.lock().unwrap()
 	}
 
-	pub fn duration(&self) -> Option<Duration> {
+	pub fn duration(&self) -> Duration {
 		*self.controls.duration.lock().unwrap()
 	}
 }

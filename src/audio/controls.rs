@@ -11,5 +11,5 @@ pub struct Controls {
 	pub speed: Mutex<f32>,
 	pub seek: Mutex<Option<Duration>>,
 	pub position: Mutex<Duration>,
-	pub duration: Mutex<Option<Duration>>,
+	pub duration: Mutex<Duration>,
 }
