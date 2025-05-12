@@ -4,13 +4,13 @@ use std::{
 };
 
 use color_eyre::eyre;
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
 	layout::{Constraint, Layout},
 	widgets::StatefulWidget,
 };
 
 use crate::{
+	config::Action,
 	state::AppState,
 	tui::{
 		input_handler::InputHandler,
@@ -24,9 +24,9 @@ pub struct EditorView;
 impl InputHandler for EditorView {
 	type State = AppState;
 
-	fn handle_input(&mut self, key: &KeyEvent, state: &mut AppState) -> eyre::Result<bool> {
-		match (key.code, key.modifiers) {
-			k if k == state.config.keys.cursor_down => {
+	fn handle_input(&mut self, action: Action, state: &mut AppState) -> eyre::Result<bool> {
+		match action {
+			Action::CursorDown => {
 				if state.lyrics.cursor.y < state.lyrics.lyrics.line_count() - 1 {
 					state
 						.lyrics
@@ -34,7 +34,7 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			k if k == state.config.keys.cursor_up => {
+			Action::CursorUp => {
 				if state.lyrics.cursor.y > 0 {
 					state
 						.lyrics
@@ -42,18 +42,25 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			k if k == state.config.keys.cursor_top => {
+			Action::CursorTop => {
 				state.lyrics.cursor_to(0, state.config.settings.scrolloff);
 				Ok(true)
 			}
-			k if k == state.config.keys.cursor_bottom => {
+			Action::CursorBottom => {
 				state.lyrics.cursor_to(
 					state.lyrics.lyrics.line_count() - 1,
 					state.config.settings.scrolloff,
 				);
 				Ok(true)
 			}
-			k if k == state.config.keys.seek_backwards => {
+			Action::SeekRelative(relative_pos) => {
+				let pos = state.audio.seek_relative(relative_pos)?;
+				if let Some(time) = pos {
+					(_, state.lyrics.time_index_hint) = state.lyrics.time_index.find_random(time);
+				}
+				Ok(true)
+			}
+			Action::SeekBackwards => {
 				let player = state
 					.audio
 					.audio_player
@@ -68,7 +75,7 @@ impl InputHandler for EditorView {
 				)?;
 				Ok(true)
 			}
-			k if k == state.config.keys.seek_forwards => {
+			Action::SeekForwards => {
 				let player = state
 					.audio
 					.audio_player
@@ -79,7 +86,7 @@ impl InputHandler for EditorView {
 				)?;
 				Ok(true)
 			}
-			k if k == state.config.keys.toggle_pause => {
+			Action::TogglePause => {
 				let player = state
 					.audio
 					.audio_player
@@ -88,7 +95,7 @@ impl InputHandler for EditorView {
 				player.set_paused(!player.is_paused());
 				Ok(true)
 			}
-			k if k == state.config.keys.volume_down => {
+			Action::VolumeDown => {
 				let player = state
 					.audio
 					.audio_player
@@ -98,7 +105,7 @@ impl InputHandler for EditorView {
 				player.set_volume(max(volume, 0) as f32 / 100.);
 				Ok(true)
 			}
-			k if k == state.config.keys.volume_up => {
+			Action::VolumeUp => {
 				let player = state
 					.audio
 					.audio_player
@@ -108,7 +115,7 @@ impl InputHandler for EditorView {
 				player.set_volume(min(volume, 100) as f32 / 100.);
 				Ok(true)
 			}
-			k if k == state.config.keys.volume_down_slightly => {
+			Action::VolumeDownSlightly => {
 				let player = state
 					.audio
 					.audio_player
@@ -118,7 +125,7 @@ impl InputHandler for EditorView {
 				player.set_volume(max(volume, 0) as f32 / 100.);
 				Ok(true)
 			}
-			k if k == state.config.keys.volume_up_slightly => {
+			Action::VolumeUpSlightly => {
 				let player = state
 					.audio
 					.audio_player
@@ -128,7 +135,7 @@ impl InputHandler for EditorView {
 				player.set_volume(min(volume, 100) as f32 / 100.);
 				Ok(true)
 			}
-			k if k == state.config.keys.speed_down => {
+			Action::SpeedDown => {
 				let player = state
 					.audio
 					.audio_player
@@ -138,7 +145,7 @@ impl InputHandler for EditorView {
 				player.set_speed(max(speed, 10) as f32 / 20.);
 				Ok(true)
 			}
-			k if k == state.config.keys.speed_up => {
+			Action::SpeedUp => {
 				let player = state
 					.audio
 					.audio_player
@@ -148,22 +155,13 @@ impl InputHandler for EditorView {
 				player.set_speed(min(speed, 40) as f32 / 20.);
 				Ok(true)
 			}
-			k if k == state.config.keys.speed_reset => {
+			Action::SpeedReset => {
 				let player = state
 					.audio
 					.audio_player
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
 				player.set_speed(1.);
-				Ok(true)
-			}
-			(KeyCode::Char(c @ '0'..='9'), KeyModifiers::NONE) => {
-				let pos = state
-					.audio
-					.seek_relative((c as u32 - '0' as u32) as f32 / 10.)?;
-				if let Some(time) = pos {
-					(_, state.lyrics.time_index_hint) = state.lyrics.time_index.find_random(time);
-				}
 				Ok(true)
 			}
 			_ => Ok(false),

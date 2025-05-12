@@ -1,42 +1,88 @@
-use crossterm::event::{KeyCode, KeyModifiers};
+use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
-pub struct Keys {
-	pub quit: (KeyCode, KeyModifiers),
-	pub cursor_down: (KeyCode, KeyModifiers),
-	pub cursor_up: (KeyCode, KeyModifiers),
-	pub cursor_top: (KeyCode, KeyModifiers),
-	pub cursor_bottom: (KeyCode, KeyModifiers),
-	pub seek_backwards: (KeyCode, KeyModifiers),
-	pub seek_forwards: (KeyCode, KeyModifiers),
-	pub toggle_pause: (KeyCode, KeyModifiers),
-	pub volume_down: (KeyCode, KeyModifiers),
-	pub volume_up: (KeyCode, KeyModifiers),
-	pub volume_down_slightly: (KeyCode, KeyModifiers),
-	pub volume_up_slightly: (KeyCode, KeyModifiers),
-	pub speed_down: (KeyCode, KeyModifiers),
-	pub speed_up: (KeyCode, KeyModifiers),
-	pub speed_reset: (KeyCode, KeyModifiers),
+use crossterm::event::{KeyCode, KeyModifiers};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub struct KeyChord {
+	pub key: KeyCode,
+	pub mods: KeyModifiers,
 }
 
-impl Default for Keys {
+impl KeyChord {
+	pub fn from_char(ch: char) -> Self {
+		Self {
+			key: KeyCode::Char(ch),
+			mods: KeyModifiers::NONE,
+		}
+	}
+
+	pub fn new(key: KeyCode, mods: KeyModifiers) -> Self {
+		Self { key, mods }
+	}
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum Action {
+	Quit,
+	CursorDown,
+	CursorUp,
+	CursorTop,
+	CursorBottom,
+	SeekRelative(f32),
+	SeekBackwards,
+	SeekForwards,
+	TogglePause,
+	VolumeDown,
+	VolumeUp,
+	VolumeDownSlightly,
+	VolumeUpSlightly,
+	SpeedDown,
+	SpeedUp,
+	SpeedReset,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct KeyMap {
+	map: HashMap<KeyChord, Action>,
+}
+
+impl KeyMap {
+	pub fn get_action(&self, key_chord: KeyChord) -> Option<Action> {
+		self.map.get(&key_chord).map(|&k| k)
+	}
+}
+
+impl Default for KeyMap {
 	fn default() -> Self {
 		Self {
-			quit: (KeyCode::Char('q'), KeyModifiers::NONE),
-			cursor_down: (KeyCode::Char('j'), KeyModifiers::NONE),
-			cursor_up: (KeyCode::Char('k'), KeyModifiers::NONE),
-			cursor_top: (KeyCode::Char('g'), KeyModifiers::NONE),
-			cursor_bottom: (KeyCode::Char('G'), KeyModifiers::NONE),
-			seek_backwards: (KeyCode::Char('H'), KeyModifiers::NONE),
-			seek_forwards: (KeyCode::Char('L'), KeyModifiers::NONE),
-			toggle_pause: (KeyCode::Char('r'), KeyModifiers::NONE),
-			volume_down: (KeyCode::Char('['), KeyModifiers::NONE),
-			volume_up: (KeyCode::Char(']'), KeyModifiers::NONE),
-			volume_down_slightly: (KeyCode::Char('{'), KeyModifiers::NONE),
-			volume_up_slightly: (KeyCode::Char('}'), KeyModifiers::NONE),
-			speed_down: (KeyCode::Char('-'), KeyModifiers::NONE),
-			speed_up: (KeyCode::Char('+'), KeyModifiers::NONE),
-			speed_reset: (KeyCode::Char('='), KeyModifiers::NONE),
+			map: HashMap::from([
+				(KeyChord::from_char('q'), Action::Quit),
+				(KeyChord::from_char('j'), Action::CursorDown),
+				(KeyChord::from_char('k'), Action::CursorUp),
+				(KeyChord::from_char('g'), Action::CursorTop),
+				(KeyChord::from_char('G'), Action::CursorBottom),
+				(KeyChord::from_char('0'), Action::SeekRelative(0.0)),
+				(KeyChord::from_char('1'), Action::SeekRelative(0.1)),
+				(KeyChord::from_char('2'), Action::SeekRelative(0.2)),
+				(KeyChord::from_char('3'), Action::SeekRelative(0.3)),
+				(KeyChord::from_char('4'), Action::SeekRelative(0.4)),
+				(KeyChord::from_char('5'), Action::SeekRelative(0.5)),
+				(KeyChord::from_char('6'), Action::SeekRelative(0.6)),
+				(KeyChord::from_char('7'), Action::SeekRelative(0.7)),
+				(KeyChord::from_char('8'), Action::SeekRelative(0.8)),
+				(KeyChord::from_char('9'), Action::SeekRelative(0.9)),
+				(KeyChord::from_char('H'), Action::SeekBackwards),
+				(KeyChord::from_char('L'), Action::SeekForwards),
+				(KeyChord::from_char('r'), Action::TogglePause),
+				(KeyChord::from_char('['), Action::VolumeDown),
+				(KeyChord::from_char(']'), Action::VolumeUp),
+				(KeyChord::from_char('{'), Action::VolumeDownSlightly),
+				(KeyChord::from_char('}'), Action::VolumeUpSlightly),
+				(KeyChord::from_char('-'), Action::SpeedDown),
+				(KeyChord::from_char('+'), Action::SpeedUp),
+				(KeyChord::from_char('='), Action::SpeedReset),
+			]),
 		}
 	}
 }
