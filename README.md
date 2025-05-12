@@ -58,10 +58,10 @@ Lyrics editor view:
 - [ ] b: cursor \[b]ackward by a word
 - [ ] u: \[u]ndo
 - [ ] ^r: \[^r]edo
-- [ ] f: play \[f]rom here
-- [ ] F: play \[F]rom here and pause at next timestamp
-- [ ] t: go \[t]o currently playing line
-- [ ] T: go \[T]o currently playing line + 1 down
+- [x] f: play \[f]rom selected word (karaoke)
+- [x] F: play \[F]rom selected line
+- [x] t: go \[t]o currently playing word (karaoke)
+- [x] T: go \[T]o start of currently playing line
 - [ ] s: increment timestamp by a \[s]econd
 - [ ] S: decrement timestamp by a \[S]econd
 - [ ] d: increment timestamp by a \[d]ecisecond (0.10)
