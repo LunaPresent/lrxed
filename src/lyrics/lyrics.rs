@@ -87,24 +87,26 @@ impl Lyrics {
 		self.lines.push(LyricLine::new(None, line.to_owned()));
 	}
 
-	pub fn metadata(&self) -> impl Iterator<Item = &Metadata> {
-		self.metadata.iter()
+	pub fn metadata(&self) -> &[Metadata] {
+		self.metadata.as_slice()
 	}
 
-	pub fn lines(&self) -> impl Iterator<Item = &LyricLine> {
-		self.lines.iter()
+	pub fn lines(&self) -> &[LyricLine] {
+		self.lines.as_slice()
 	}
 
-	pub fn line_count(&self) -> usize {
-		self.lines.len()
+	pub fn line_count(&self) -> u16 {
+		self.lines.len() as u16
 	}
 
-	pub fn time_at_line(&self, y: usize) -> Option<&Timestamp> {
-		self.lines.get(y).and_then(|line| line.timestamp())
+	pub fn time_at_line(&self, y: u16) -> Option<&Timestamp> {
+		self.lines.get(y as usize).and_then(|line| line.timestamp())
 	}
 
 	pub fn time_at_cursor(&self, cursor: Coord) -> Option<&Timestamp> {
 		// TODO: karaoke: use x position to get word if possible, fallback to line
-		self.lines.get(cursor.y).and_then(|line| line.timestamp())
+		self.lines
+			.get(cursor.y as usize)
+			.and_then(|line| line.timestamp())
 	}
 }

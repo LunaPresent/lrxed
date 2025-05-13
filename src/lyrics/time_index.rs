@@ -5,7 +5,7 @@ use super::lyric_line::LyricLine;
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct TimeIndexEntry {
 	pub time: Duration,
-	pub line_num: Option<usize>,
+	pub line_num: Option<u16>,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
@@ -41,7 +41,7 @@ impl TimeIndex {
 				.filter_map(|(i, line)| match line.timestamp() {
 					Some(timestamp) => Some(TimeIndexEntry {
 						time: timestamp.time(),
-						line_num: Some(i),
+						line_num: Some(i as u16),
 					}),
 					None => None,
 				}),
