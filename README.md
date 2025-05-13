@@ -41,8 +41,8 @@ Global:
 Lyrics editor view:
 
 - [ ] Space: sync lyrics to current time and select next line
-- [ ] j: cursor down
-- [ ] k: cursor up
+- [x] j: cursor down
+- [x] k: cursor up
 - [ ] h: cursor left
 - [ ] l: cursor right
 - [ ] J: append next line to current
@@ -52,8 +52,8 @@ Lyrics editor view:
 - [x] \[0-9]: seek to \[0-9]0%
 - [ ] r: \[r]esume/pause
 - [ ] R: \[R]estart
-- [ ] g: \[g]o to first line
-- [ ] G: \[G]o to last line
+- [x] g: \[g]o to first line
+- [x] G: \[G]o to last line
 - [ ] w: cursor to next \[w]ord
 - [ ] e: cursor to \[e]nd of word
 - [ ] b: cursor \[b]ackward by a word
