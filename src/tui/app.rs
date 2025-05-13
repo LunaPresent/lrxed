@@ -5,7 +5,10 @@ use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyM
 use ratatui::{DefaultTerminal, Frame, buffer::Buffer, layout::Rect, widgets::StatefulWidget};
 use tokio_stream::StreamExt;
 
-use crate::state::AppState;
+use crate::{
+	config::{Action, KeyChord},
+	state::AppState,
+};
 
 use super::{
 	input_handler::InputHandler,
@@ -58,7 +61,15 @@ impl App {
 				if let KeyCode::Char(_) = key.code {
 					key.modifiers = key.modifiers.difference(KeyModifiers::SHIFT);
 				}
-				self.handle_input(key, state).map(|_| ())
+				if let Some(action) = state
+					.config
+					.keys
+					.get_action(KeyChord::new(key.code, key.modifiers))
+				{
+					self.handle_input(action, state).map(|_| ())
+				} else {
+					Ok(())
+				}
 			}
 			_ => Ok(()),
 		};
@@ -70,15 +81,15 @@ impl App {
 impl InputHandler for App {
 	type State = AppState;
 
-	fn handle_input(&mut self, key: &KeyEvent, state: &mut Self::State) -> eyre::Result<bool> {
+	fn handle_input(&mut self, action: Action, state: &mut Self::State) -> eyre::Result<bool> {
 		let consumed = match self.active_view {
-			View::FileTree => FileTreeView.handle_input(key, state),
-			View::Editor => EditorView.handle_input(key, state),
+			View::FileTree => FileTreeView.handle_input(action, state),
+			View::Editor => EditorView.handle_input(action, state),
 		}?;
 		if !consumed {
-			match (key.code, key.modifiers) {
+			match action {
 				// global keys here
-				k if k == state.config.keys.quit => {
+				Action::Quit => {
 					self.should_quit = true;
 					Ok(true)
 				}
