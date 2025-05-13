@@ -2,6 +2,6 @@ mod keys;
 mod settings;
 mod theme;
 
-pub use keys::Keys;
+pub use keys::{Action, KeyChord, KeyMap};
 pub use settings::Settings;
 pub use theme::Theme;
