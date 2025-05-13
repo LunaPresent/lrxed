@@ -3,6 +3,7 @@ use ratatui::widgets::StatefulWidget;
 
 use crate::{state::AppState, tui::input_handler::InputHandler};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileTreeView;
 
 impl InputHandler for FileTreeView {

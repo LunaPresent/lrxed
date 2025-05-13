@@ -13,6 +13,7 @@ use crate::{
 	},
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EditorView;
 
 impl InputHandler for EditorView {
@@ -43,7 +44,7 @@ impl StatefulWidget for EditorView {
 		let layout = Layout::vertical([Constraint::Min(4), Constraint::Length(4)]);
 		let [lyrics_area, playback_area] = layout.areas(area);
 
-		LyricsWidget.render(lyrics_area, buf, &mut state.lyrics_state);
-		PlaybackWidget.render(playback_area, buf, &mut state.audio_state);
+		LyricsWidget.render(lyrics_area, buf, state);
+		PlaybackWidget.render(playback_area, buf, state);
 	}
 }
