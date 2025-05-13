@@ -73,9 +73,9 @@ impl InputHandler for App {
 			View::Editor => EditorView.handle_input(key, state),
 		}?;
 		if !consumed {
-			match key.code {
+			match (key.code, key.modifiers) {
 				// global keys here
-				KeyCode::Char('q') => {
+				state.config.keys.quit => {
 					self.should_quit = true;
 					Ok(true)
 				}

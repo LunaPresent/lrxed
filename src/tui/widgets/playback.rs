@@ -5,13 +5,13 @@ use ratatui::{
 	widgets::{Block, Borders, Gauge, Padding, StatefulWidget, Widget},
 };
 
-use crate::state::AudioState;
+use crate::state::AppState;
 
-#[derive(Default, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PlaybackWidget;
 
 impl StatefulWidget for PlaybackWidget {
-	type State = AudioState;
+	type State = AppState;
 
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State)
 	where
@@ -27,7 +27,7 @@ impl StatefulWidget for PlaybackWidget {
 		let inner = block.inner(area);
 		block.render(area, buf);
 
-		if let Some(ref player) = state.audio_player {
+		if let Some(ref player) = state.audio_state.audio_player {
 			// let guage = Gauge::default().use_unicode(true);
 			// guage.render(inner, buf);
 			let msg = Span::from(format!(

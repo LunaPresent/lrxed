@@ -10,6 +10,7 @@ use color_eyre::Result;
 
 mod audio;
 mod cli;
+mod config;
 mod lyrics;
 mod state;
 mod tui;
