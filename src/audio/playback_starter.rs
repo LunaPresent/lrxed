@@ -9,12 +9,12 @@ use rodio::{OutputStreamHandle, Sample, Source, cpal::FromSample};
 use super::{controls::Controls, stop_on_end::StopOnEnd};
 
 pub trait StartPlayback {
-	fn start_playback(&mut self) -> eyre::Result<()>;
+	fn start_playback(&self) -> eyre::Result<()>;
 }
 
 pub struct PlaybackStarter<F, S>
 where
-	F: FnMut() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<S> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
@@ -26,7 +26,7 @@ where
 
 impl<F, S> PlaybackStarter<F, S>
 where
-	F: FnMut() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<S> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
@@ -42,12 +42,12 @@ where
 
 impl<F, S> StartPlayback for PlaybackStarter<F, S>
 where
-	F: FnMut() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<S> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
 {
-	fn start_playback(&mut self) -> eyre::Result<()> {
+	fn start_playback(&self) -> eyre::Result<()> {
 		let source = (self.factory)()?;
 		*self.controls.duration.lock().unwrap() = source.total_duration();
 
