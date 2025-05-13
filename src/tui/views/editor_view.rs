@@ -27,7 +27,7 @@ impl InputHandler for EditorView {
 	fn handle_input(&mut self, key: &KeyEvent, state: &mut AppState) -> eyre::Result<bool> {
 		match (key.code, key.modifiers) {
 			k if k == state.config.keys.cursor_down => {
-				if state.lyrics.cursor.y < state.lyrics.lyrics.lines().len() - 1 {
+				if state.lyrics.cursor.y < state.lyrics.lyrics.line_count() - 1 {
 					state
 						.lyrics
 						.cursor_to(state.lyrics.cursor.y + 1, state.config.settings.scrolloff);
@@ -48,7 +48,7 @@ impl InputHandler for EditorView {
 			}
 			k if k == state.config.keys.cursor_bottom => {
 				state.lyrics.cursor_to(
-					state.lyrics.lyrics.lines().len() - 1,
+					state.lyrics.lyrics.line_count() - 1,
 					state.config.settings.scrolloff,
 				);
 				Ok(true)
@@ -158,9 +158,12 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			(KeyCode::Char(c @ '0'..='9'), KeyModifiers::NONE) => {
-				state
+				let pos = state
 					.audio
-					.seek_relative_or_ignore((c as u32 - '0' as u32) as f32 / 10.)?;
+					.seek_relative((c as u32 - '0' as u32) as f32 / 10.)?;
+				if let Some(time) = pos {
+					(_, state.lyrics.time_index_hint) = state.lyrics.time_index.find_random(time);
+				}
 				Ok(true)
 			}
 			_ => Ok(false),

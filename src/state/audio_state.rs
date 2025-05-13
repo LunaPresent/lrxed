@@ -1,4 +1,6 @@
-use color_eyre::eyre::{self};
+use std::time::Duration;
+
+use color_eyre::eyre;
 
 use crate::audio::{AudioDevice, AudioPlayer};
 
@@ -9,12 +11,13 @@ pub struct AudioState {
 }
 
 impl AudioState {
-	pub fn seek_relative_or_ignore(&self, relative_position: f32) -> eyre::Result<()> {
+	pub fn seek_relative(&self, relative_position: f32) -> eyre::Result<Option<Duration>> {
 		if let Some(player) = self.audio_player.as_ref() {
 			let target_pos = player.duration().mul_f32(relative_position.min(1.).max(0.));
 			player.seek(target_pos)?;
+			Ok(Some(target_pos))
+		} else {
+			Ok(None)
 		}
-
-		Ok(())
 	}
 }
