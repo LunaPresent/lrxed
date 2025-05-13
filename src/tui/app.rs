@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use color_eyre::{Result, eyre};
-use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{DefaultTerminal, Frame, buffer::Buffer, layout::Rect, widgets::StatefulWidget};
 use tokio_stream::StreamExt;
 
@@ -42,7 +42,7 @@ impl App {
 		while !self.should_quit {
 			tokio::select! {
 				_ = interval.tick() => { terminal.draw(|frame| self.draw(frame, state))?; },
-				Some(Ok(event)) = events.next() => self.handle_event(&event, state),
+				Some(Ok(mut event)) = events.next() => self.handle_event(&mut event, state),
 			}
 		}
 		Ok(())
@@ -52,9 +52,12 @@ impl App {
 		frame.render_stateful_widget(self, frame.area(), state);
 	}
 
-	fn handle_event(&mut self, event: &Event, state: &mut AppState) {
+	fn handle_event(&mut self, event: &mut Event, state: &mut AppState) {
 		let result = match event {
 			Event::Key(key) if key.kind == KeyEventKind::Press => {
+				if let KeyCode::Char(_) = key.code {
+					key.modifiers = key.modifiers.difference(KeyModifiers::SHIFT);
+				}
 				self.handle_input(key, state).map(|_| ())
 			}
 			_ => Ok(()),

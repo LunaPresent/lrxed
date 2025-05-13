@@ -1,6 +1,6 @@
 use ratatui::style::{Color, Modifier, Style};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct Theme {
 	pub cursorline: Style,
 	pub current_line: Style,

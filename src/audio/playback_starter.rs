@@ -53,9 +53,8 @@ where
 
 		let access_controls = self.controls.clone();
 		let source = source
-			.speed(1.0)
-			// must be placed before pausable but after speed & delay
 			.track_position()
+			.speed(1.0)
 			.pausable(true)
 			.amplify(1.0)
 			.stoppable()
@@ -64,16 +63,21 @@ where
 					src.stop();
 					*access_controls.position.lock().unwrap() = Duration::ZERO;
 				}
-				*access_controls.position.lock().unwrap() = src.inner().inner().inner().get_pos();
+				*access_controls.position.lock().unwrap() =
+					src.inner().inner().inner().inner().get_pos();
+				src.inner_mut()
+					.set_factor(*access_controls.volume.lock().unwrap());
+				src.inner_mut()
+					.inner_mut()
+					.inner_mut()
+					.set_factor(*access_controls.speed.lock().unwrap());
 				if let Some(seek) = access_controls.seek.lock().unwrap().take() {
-					_ = src.try_seek(seek);
+					let speed = *access_controls.speed.lock().unwrap();
+					_ = src.try_seek(seek.div_f32(speed));
 				}
-				let amp = src.inner_mut();
-				amp.set_factor(*access_controls.volume.lock().unwrap());
-				let speed = amp.inner_mut().inner_mut().inner_mut();
-				speed.set_factor(*access_controls.speed.lock().unwrap());
-				let pause = amp.inner_mut();
-				pause.set_paused(access_controls.pause.load(Ordering::SeqCst));
+				src.inner_mut()
+					.inner_mut()
+					.set_paused(access_controls.pause.load(Ordering::SeqCst));
 			})
 			.convert_samples::<f32>();
 
