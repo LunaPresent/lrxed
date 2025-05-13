@@ -27,7 +27,7 @@ impl StatefulWidget for PlaybackWidget {
 		let inner = block.inner(area);
 		block.render(area, buf);
 
-		if let Some(ref player) = state.audio_state.audio_player {
+		if let Some(ref player) = state.audio.audio_player {
 			// let guage = Gauge::default().use_unicode(true);
 			// guage.render(inner, buf);
 			let msg = Span::from(format!(
