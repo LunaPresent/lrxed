@@ -132,7 +132,7 @@ impl InputHandler for EditorView {
 					.ok_or(eyre::eyre!("No audio playing"))?;
 
 				if let Some(timestamp) = state.lyrics.lyrics.time_at_cursor(state.lyrics.cursor) {
-					player.seek(timestamp.time())?;
+					player.seek(timestamp.time() + Duration::from_millis(1))?;
 					(_, state.lyrics.time_index_hint) =
 						state.lyrics.time_index.find_random(timestamp.time());
 				}
@@ -146,7 +146,7 @@ impl InputHandler for EditorView {
 					.ok_or(eyre::eyre!("No audio playing"))?;
 
 				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.lyrics.cursor.y) {
-					player.seek(timestamp.time())?;
+					player.seek(timestamp.time() + Duration::from_millis(1))?;
 					(_, state.lyrics.time_index_hint) =
 						state.lyrics.time_index.find_random(timestamp.time());
 				}
