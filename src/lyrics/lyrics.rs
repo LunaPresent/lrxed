@@ -85,11 +85,15 @@ impl Lyrics {
 		self.lines.push(LyricLine::new(None, line.to_owned()));
 	}
 
-	pub fn metadata(&self) -> &Vec<Metadata> {
-		&self.metadata
+	pub fn metadata(&self) -> impl Iterator<Item = &Metadata> {
+		self.metadata.iter()
 	}
 
-	pub fn lines(&self) -> &Vec<LyricLine> {
-		&self.lines
+	pub fn lines(&self) -> impl Iterator<Item = &LyricLine> {
+		self.lines.iter()
+	}
+
+	pub fn line_count(&self) -> usize {
+		self.lines.len()
 	}
 }
