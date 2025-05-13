@@ -5,7 +5,9 @@ use std::{
 
 use color_eyre::eyre;
 
-use super::{lyric_line::LyricLine, metadata::Metadata};
+use crate::state::Coord;
+
+use super::{Timestamp, lyric_line::LyricLine, metadata::Metadata};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct Lyrics {
@@ -95,5 +97,14 @@ impl Lyrics {
 
 	pub fn line_count(&self) -> usize {
 		self.lines.len()
+	}
+
+	pub fn time_at_line(&self, y: usize) -> Option<&Timestamp> {
+		self.lines.get(y).and_then(|line| line.timestamp())
+	}
+
+	pub fn time_at_cursor(&self, cursor: Coord) -> Option<&Timestamp> {
+		// TODO: karaoke: use x position to get word if possible, fallback to line
+		self.lines.get(cursor.y).and_then(|line| line.timestamp())
 	}
 }

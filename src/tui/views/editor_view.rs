@@ -53,6 +53,43 @@ impl InputHandler for EditorView {
 				);
 				Ok(true)
 			}
+			Action::CursorToPlaying => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+
+				// TODO: get cursor x position from time and set it
+				let time;
+				(time, state.lyrics.time_index_hint) = state
+					.lyrics
+					.time_index
+					.find_seq(player.position(), state.lyrics.time_index_hint);
+
+				if let Some(y) = time.line_num {
+					state.lyrics.cursor_to(y, state.config.settings.scrolloff);
+				}
+				Ok(true)
+			}
+			Action::CursorToPlayingLine => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+
+				let time;
+				(time, state.lyrics.time_index_hint) = state
+					.lyrics
+					.time_index
+					.find_seq(player.position(), state.lyrics.time_index_hint);
+
+				if let Some(y) = time.line_num {
+					state.lyrics.cursor_to(y, state.config.settings.scrolloff);
+				}
+				Ok(true)
+			}
 			Action::SeekRelative(relative_pos) => {
 				let pos = state.audio.seek_relative(relative_pos)?;
 				if let Some(time) = pos {
@@ -84,6 +121,34 @@ impl InputHandler for EditorView {
 				player.seek(
 					player.position() + Duration::from_secs_f32(state.config.settings.jump_seconds),
 				)?;
+				Ok(true)
+			}
+			Action::SeekToCursor => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+
+				if let Some(timestamp) = state.lyrics.lyrics.time_at_cursor(state.lyrics.cursor) {
+					player.seek(timestamp.time())?;
+					(_, state.lyrics.time_index_hint) =
+						state.lyrics.time_index.find_random(timestamp.time());
+				}
+				Ok(true)
+			}
+			Action::SeekToCursorLine => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+
+				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.lyrics.cursor.y) {
+					player.seek(timestamp.time())?;
+					(_, state.lyrics.time_index_hint) =
+						state.lyrics.time_index.find_random(timestamp.time());
+				}
 				Ok(true)
 			}
 			Action::TogglePause => {
