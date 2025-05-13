@@ -33,7 +33,7 @@ impl StatefulWidget for PlaybackWidget {
 			let msg = Span::from(format!(
 				"{}/{}, stopped: {}",
 				player.position().as_secs_f32(),
-				player.duration().unwrap().as_secs_f32(),
+				player.duration().as_secs_f32(),
 				player.is_stopped(),
 			));
 			msg.render(inner, buf);
