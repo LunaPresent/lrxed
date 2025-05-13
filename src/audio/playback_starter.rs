@@ -14,7 +14,7 @@ pub trait StartPlayback {
 
 pub struct PlaybackStarter<F, S>
 where
-	F: Fn() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<(S, Duration)> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
@@ -26,7 +26,7 @@ where
 
 impl<F, S> PlaybackStarter<F, S>
 where
-	F: Fn() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<(S, Duration)> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
@@ -42,14 +42,14 @@ where
 
 impl<F, S> StartPlayback for PlaybackStarter<F, S>
 where
-	F: Fn() -> eyre::Result<S> + 'static,
+	F: Fn() -> eyre::Result<(S, Duration)> + 'static,
 	S: Source + Send + 'static,
 	f32: FromSample<S::Item>,
 	S::Item: Sample + Send,
 {
 	fn start_playback(&self) -> eyre::Result<()> {
-		let source = (self.factory)()?;
-		*self.controls.duration.lock().unwrap() = source.total_duration();
+		let (source, duration) = (self.factory)()?;
+		*self.controls.duration.lock().unwrap() = duration;
 
 		let access_controls = self.controls.clone();
 		let source = source
@@ -61,7 +61,9 @@ where
 			.periodic_access(Duration::from_millis(5), move |src| {
 				if access_controls.stopped.load(Ordering::SeqCst) {
 					src.stop();
-					*access_controls.position.lock().unwrap() = Duration::ZERO;
+					*access_controls.position.lock().unwrap() =
+						*access_controls.duration.lock().unwrap();
+					return;
 				}
 				*access_controls.position.lock().unwrap() =
 					src.inner().inner().inner().inner().get_pos();
