@@ -11,7 +11,7 @@ use ratatui::{
 
 use crate::{
 	config::Action,
-	state::AppState,
+	state::{AppState, Coord},
 	tui::{
 		input_handler::InputHandler,
 		widgets::{LyricsWidget, PlaybackWidget},
@@ -26,31 +26,28 @@ impl InputHandler for EditorView {
 
 	fn handle_input(&mut self, action: Action, state: &mut AppState) -> eyre::Result<bool> {
 		match action {
-			Action::CursorDown => {
-				if state.lyrics.cursor.y < state.lyrics.lyrics.line_count() - 1 {
-					state
-						.lyrics
-						.cursor_to(state.lyrics.cursor.y + 1, state.config.settings.scrolloff);
-				}
-				Ok(true)
-			}
-			Action::CursorUp => {
-				if state.lyrics.cursor.y > 0 {
-					state
-						.lyrics
-						.cursor_to(state.lyrics.cursor.y - 1, state.config.settings.scrolloff);
-				}
-				Ok(true)
-			}
-			Action::CursorTop => {
-				state.lyrics.cursor_to(0, state.config.settings.scrolloff);
-				Ok(true)
-			}
-			Action::CursorBottom => {
-				state.lyrics.cursor_to(
-					state.lyrics.lyrics.line_count() - 1,
+			Action::MoveCursorY(offset) => {
+				state.lyrics.set_cursor_y(
+					max(state.lyrics.cursor.y as i16 + offset, 0) as u16,
 					state.config.settings.scrolloff,
 				);
+				Ok(true)
+			}
+			Action::MoveCursorX(offset) => {
+				state
+					.lyrics
+					.set_cursor_x(max(state.lyrics.cursor.x as i16 + offset, 0) as u16);
+				state.lyrics.cursor_target.x = state.lyrics.cursor.x;
+				Ok(true)
+			}
+			Action::SetCursorY(y) => {
+				state
+					.lyrics
+					.set_cursor_y(y, state.config.settings.scrolloff);
+				Ok(true)
+			}
+			Action::SetCursorX(x) => {
+				state.lyrics.set_cursor_x(x);
 				Ok(true)
 			}
 			Action::CursorToPlaying => {
@@ -68,7 +65,9 @@ impl InputHandler for EditorView {
 					.find_seq(player.position(), state.lyrics.time_index_hint);
 
 				if let Some(y) = time.line_num {
-					state.lyrics.cursor_to(y, state.config.settings.scrolloff);
+					state
+						.lyrics
+						.set_cursor_pos(Coord { x: 0, y }, state.config.settings.scrolloff);
 				}
 				Ok(true)
 			}
@@ -86,7 +85,9 @@ impl InputHandler for EditorView {
 					.find_seq(player.position(), state.lyrics.time_index_hint);
 
 				if let Some(y) = time.line_num {
-					state.lyrics.cursor_to(y, state.config.settings.scrolloff);
+					state
+						.lyrics
+						.set_cursor_pos(Coord { x: 0, y }, state.config.settings.scrolloff);
 				}
 				Ok(true)
 			}
@@ -160,67 +161,27 @@ impl InputHandler for EditorView {
 				player.set_paused(!player.is_paused());
 				Ok(true)
 			}
-			Action::VolumeDown => {
+			Action::ChangeVolume(pct) => {
 				let player = state
 					.audio
 					.audio_player
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
-				let volume = (player.volume() * 100. + 0.5) as i16 - 10;
-				player.set_volume(max(volume, 0) as f32 / 100.);
+				let volume = (player.volume() * 100. + 0.5) as i16 + pct;
+				player.set_volume(min(max(volume, 0), 100) as f32 / 100.);
 				Ok(true)
 			}
-			Action::VolumeUp => {
+			Action::ChangeSpeed(pct) => {
 				let player = state
 					.audio
 					.audio_player
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
-				let volume = (player.volume() * 100. + 0.5) as i16 + 10;
-				player.set_volume(min(volume, 100) as f32 / 100.);
+				let speed = (player.speed() * 100. + 0.5) as i16 + pct;
+				player.set_speed(min(max(speed, 50), 200) as f32 / 100.);
 				Ok(true)
 			}
-			Action::VolumeDownSlightly => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
-				let volume = (player.volume() * 100. + 0.5) as i16 - 1;
-				player.set_volume(max(volume, 0) as f32 / 100.);
-				Ok(true)
-			}
-			Action::VolumeUpSlightly => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
-				let volume = (player.volume() * 100. + 0.5) as i16 + 1;
-				player.set_volume(min(volume, 100) as f32 / 100.);
-				Ok(true)
-			}
-			Action::SpeedDown => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
-				let speed = (player.speed() * 20. + 0.5) as i16 - 1;
-				player.set_speed(max(speed, 10) as f32 / 20.);
-				Ok(true)
-			}
-			Action::SpeedUp => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
-				let speed = (player.speed() * 20. + 0.5) as i16 + 1;
-				player.set_speed(min(speed, 40) as f32 / 20.);
-				Ok(true)
-			}
-			Action::SpeedReset => {
+			Action::ResetSpeed => {
 				let player = state
 					.audio
 					.audio_player

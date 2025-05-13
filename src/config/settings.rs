@@ -1,6 +1,6 @@
 #[derive(Debug, Clone, PartialEq)]
 pub struct Settings {
-	pub scrolloff: usize,
+	pub scrolloff: u16,
 	pub jump_seconds: f32,
 }
 

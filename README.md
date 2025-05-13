@@ -43,16 +43,18 @@ Lyrics editor view:
 - [ ] Space: sync lyrics to current time and select next line
 - [x] j: cursor down
 - [x] k: cursor up
-- [ ] h: cursor left
-- [ ] l: cursor right
+- [x] h: cursor left
+- [x] l: cursor right
+- [x] g: \[g]o to first line
+- [x] G: \[G]o to last line
+- [x] \_: cursor to line start
+- [x] $: cursor to line end
 - [ ] J: append next line to current
 - [ ] K: split line at cursor
 - [x] H: seek backwards
 - [x] L: seek forwards
 - [x] \[0-9]: seek to \[0-9]0%
 - [x] r: \[r]esume/pause
-- [x] g: \[g]o to first line
-- [x] G: \[G]o to last line
 - [ ] w: cursor to next \[w]ord
 - [ ] e: cursor to \[e]nd of word
 - [ ] b: cursor \[b]ackward by a word
@@ -68,7 +70,7 @@ Lyrics editor view:
 - [ ] D: decrement timestamp by a \[D]ecisecond (0.10)
 - [ ] c: increment timestamp by a \[c]entisecond (0.01)
 - [ ] C: decrement timestamp by a \[C]entisecond (0.01)
-- [ ] z: set timestamp average of surrounding
+- [ ] ^s: set timestamp average of surrounding
 - [ ] x: delete timestamp
 - [ ] X: delete line
 - [ ] y: \[y]ank timestamp

@@ -9,7 +9,10 @@ use ratatui::{
 	widgets::{Block, StatefulWidget, Widget},
 };
 
-use crate::{lyrics::TimeIndexEntry, state::AppState};
+use crate::{
+	lyrics::TimeIndexEntry,
+	state::{AppState, Coord},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct LyricsWidget;
@@ -21,11 +24,11 @@ impl StatefulWidget for LyricsWidget {
 	where
 		Self: Sized,
 	{
-		state.lyrics.bufsize.y = area.height as usize;
+		state.lyrics.bufsize.y = area.height;
 		let rows = cmp::min(
-			area.height as usize,
-			state.lyrics.lyrics.line_count() - state.lyrics.scroll_y,
-		);
+			area.height,
+			state.lyrics.lyrics.line_count() - state.lyrics.scroll.y,
+		) as usize;
 		let layout = Layout::vertical(
 			iter::repeat_n(Constraint::Length(1), rows).chain(iter::once(Constraint::Fill(1))),
 		);
@@ -36,9 +39,30 @@ impl StatefulWidget for LyricsWidget {
 			.lyrics
 			.lyrics
 			.lines()
+			.iter()
 			.enumerate()
-			.skip(state.lyrics.scroll_y)
+			.skip(state.lyrics.scroll.y as usize)
 			.take(rows);
+
+		let line_layout = Layout::horizontal([
+			Constraint::Length(8),
+			Constraint::Length(1),
+			Constraint::Length(2),
+			Constraint::Fill(1),
+		]);
+
+		if let Some(&line_area) =
+			line_areas.get((state.lyrics.cursor.y - state.lyrics.scroll.y) as usize)
+		{
+			Block::new()
+				.style(state.config.theme.cursorline)
+				.render(line_area, buf);
+			let [_, _, _, text_area] = line_layout.areas(line_area);
+			state.cursor_pos = text_area.positions().next().map(|p| Coord {
+				x: p.x + state.lyrics.cursor.x,
+				y: p.y,
+			});
+		}
 
 		let mut current_lyric_line = TimeIndexEntry::default();
 		if let Some(player) = &state.audio.audio_player {
@@ -49,22 +73,9 @@ impl StatefulWidget for LyricsWidget {
 		}
 
 		for ((line_num, lyric_line), &line_area) in lyrics_lines.zip(line_areas) {
-			let select_style = if line_num == state.lyrics.cursor.y {
-				state.config.theme.cursorline
-			} else {
-				Style::default()
-			};
-			Block::new().style(select_style).render(line_area, buf);
-			let line_layout = Layout::horizontal([
-				Constraint::Length(8),
-				Constraint::Length(1),
-				Constraint::Length(2),
-				Constraint::Fill(1),
-			]);
-
-			let is_current_lyric = Some(line_num) == current_lyric_line.line_num;
+			let is_current_lyric = Some(line_num as u16) == current_lyric_line.line_num;
 			let lyrics_style = if is_current_lyric {
-				state.config.theme.current_line
+				state.config.theme.lyrics_line
 			} else {
 				Style::default()
 			};
