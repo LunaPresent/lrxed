@@ -30,7 +30,7 @@ impl AudioPlayer {
 		let controls = Arc::new(Controls {
 			pause: AtomicBool::new(false),
 			stopped: AtomicBool::new(false),
-			volume: Mutex::new(0.25),
+			volume: Mutex::new(0.5),
 			speed: Mutex::new(1.0),
 			seek: Mutex::new(None),
 			position: Mutex::new(Duration::ZERO),
