@@ -5,13 +5,13 @@ use std::{
 
 use color_eyre::eyre;
 use ratatui::{
-	layout::{Constraint, Layout},
+	layout::{Constraint, Layout, Position},
 	widgets::StatefulWidget,
 };
 
 use crate::{
 	config::Action,
-	state::{AppState, Coord},
+	state::AppState,
 	tui::{
 		input_handler::InputHandler,
 		widgets::{LyricsWidget, PlaybackWidget},
@@ -27,27 +27,65 @@ impl InputHandler for EditorView {
 	fn handle_input(&mut self, action: Action, state: &mut AppState) -> eyre::Result<bool> {
 		match action {
 			Action::MoveCursorY(offset) => {
-				state.lyrics.set_cursor_y(
-					max(state.lyrics.cursor.y as i16 + offset, 0) as u16,
-					state.config.settings.scrolloff,
-				);
+				state
+					.cursor
+					.set_y(max(state.cursor.pos().y as i16 + offset, 0) as u16)
+					.update_pos(state.lyrics.lyrics.line_lenghts())
+					.update_scroll(
+						Position::new(
+							state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+							state.lyrics.lyrics.line_count(),
+						),
+						state.lyrics.screen_size,
+						state.config.settings.scrolloff,
+					);
+				state.cursor.set_y(state.cursor.pos().y);
 				Ok(true)
 			}
 			Action::MoveCursorX(offset) => {
 				state
-					.lyrics
-					.set_cursor_x(max(state.lyrics.cursor.x as i16 + offset, 0) as u16);
-				state.lyrics.cursor_target.x = state.lyrics.cursor.x;
+					.cursor
+					.set_x(max(state.cursor.pos().x as i16 + offset, 0) as u16)
+					.update_pos(state.lyrics.lyrics.line_lenghts())
+					.update_scroll(
+						Position::new(
+							state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+							state.lyrics.lyrics.line_count(),
+						),
+						state.lyrics.screen_size,
+						state.config.settings.scrolloff,
+					);
+				state.cursor.set_x(state.cursor.pos().x);
 				Ok(true)
 			}
 			Action::SetCursorY(y) => {
 				state
-					.lyrics
-					.set_cursor_y(y, state.config.settings.scrolloff);
+					.cursor
+					.set_y(y)
+					.update_pos(state.lyrics.lyrics.line_lenghts())
+					.update_scroll(
+						Position::new(
+							state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+							state.lyrics.lyrics.line_count(),
+						),
+						state.lyrics.screen_size,
+						state.config.settings.scrolloff,
+					);
 				Ok(true)
 			}
 			Action::SetCursorX(x) => {
-				state.lyrics.set_cursor_x(x);
+				state
+					.cursor
+					.set_x(x)
+					.update_pos(state.lyrics.lyrics.line_lenghts())
+					.update_scroll(
+						Position::new(
+							state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+							state.lyrics.lyrics.line_count(),
+						),
+						state.lyrics.screen_size,
+						state.config.settings.scrolloff,
+					);
 				Ok(true)
 			}
 			Action::CursorToPlaying => {
@@ -66,8 +104,17 @@ impl InputHandler for EditorView {
 
 				if let Some(y) = time.line_num {
 					state
-						.lyrics
-						.set_cursor_pos(Coord { x: 0, y }, state.config.settings.scrolloff);
+						.cursor
+						.set_y(y)
+						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_scroll(
+							Position::new(
+								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
+							),
+							state.lyrics.screen_size,
+							state.config.settings.scrolloff,
+						);
 				}
 				Ok(true)
 			}
@@ -86,8 +133,17 @@ impl InputHandler for EditorView {
 
 				if let Some(y) = time.line_num {
 					state
-						.lyrics
-						.set_cursor_pos(Coord { x: 0, y }, state.config.settings.scrolloff);
+						.cursor
+						.set_y(y)
+						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_scroll(
+							Position::new(
+								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
+							),
+							state.lyrics.screen_size,
+							state.config.settings.scrolloff,
+						);
 				}
 				Ok(true)
 			}
@@ -131,7 +187,11 @@ impl InputHandler for EditorView {
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
 
-				if let Some(timestamp) = state.lyrics.lyrics.time_at_cursor(state.lyrics.cursor) {
+				if let Some(timestamp) = state
+					.lyrics
+					.lyrics
+					.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
+				{
 					player.seek(timestamp.time() + Duration::from_millis(1))?;
 					(_, state.lyrics.time_index_hint) =
 						state.lyrics.time_index.find_random(timestamp.time());
@@ -145,7 +205,7 @@ impl InputHandler for EditorView {
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
 
-				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.lyrics.cursor.y) {
+				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.cursor.pos().y) {
 					player.seek(timestamp.time() + Duration::from_millis(1))?;
 					(_, state.lyrics.time_index_hint) =
 						state.lyrics.time_index.find_random(timestamp.time());
