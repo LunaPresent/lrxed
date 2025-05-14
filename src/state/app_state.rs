@@ -1,9 +1,11 @@
-use super::{AudioState, Config, Coord, LyricsState};
+use crate::tui::Cursor;
+
+use super::{AudioState, Config, LyricsState};
 
 #[derive(Default)]
 pub struct AppState {
 	pub audio: AudioState,
 	pub lyrics: LyricsState,
-	pub cursor_pos: Option<Coord>,
+	pub cursor: Cursor,
 	pub config: Config,
 }

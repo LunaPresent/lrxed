@@ -5,8 +5,6 @@ use std::{
 
 use color_eyre::eyre;
 
-use crate::state::Coord;
-
 use super::{Timestamp, lyric_line::LyricLine, metadata::Metadata};
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -99,14 +97,16 @@ impl Lyrics {
 		self.lines.len() as u16
 	}
 
+	pub fn line_lenghts(&self) -> impl Iterator<Item = u16> {
+		self.lines.iter().map(|x| x.text().len() as u16)
+	}
+
 	pub fn time_at_line(&self, y: u16) -> Option<&Timestamp> {
 		self.lines.get(y as usize).and_then(|line| line.timestamp())
 	}
 
-	pub fn time_at_cursor(&self, cursor: Coord) -> Option<&Timestamp> {
+	pub fn time_at_cursor(&self, x: u16, y: u16) -> Option<&Timestamp> {
 		// TODO: karaoke: use x position to get word if possible, fallback to line
-		self.lines
-			.get(cursor.y as usize)
-			.and_then(|line| line.timestamp())
+		self.lines.get(y as usize).and_then(|line| line.timestamp())
 	}
 }
