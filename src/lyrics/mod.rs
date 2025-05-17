@@ -1,3 +1,4 @@
+pub mod editing;
 mod lyric_line;
 mod lyrics;
 mod metadata;

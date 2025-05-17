@@ -3,7 +3,7 @@ use std::{
 	time::Duration,
 };
 
-use color_eyre::eyre;
+use color_eyre::eyre::{self, OptionExt};
 use ratatui::{
 	layout::{Constraint, Layout, Position},
 	widgets::StatefulWidget,
@@ -248,6 +248,54 @@ impl InputHandler for EditorView {
 					.as_ref()
 					.ok_or(eyre::eyre!("No audio playing"))?;
 				player.set_speed(1.);
+				Ok(true)
+			}
+			Action::Undo => {
+				state.lyrics.history.undo(&mut state.lyrics.lyrics)?;
+				Ok(true)
+			}
+			Action::Redo => {
+				state.lyrics.history.redo(&mut state.lyrics.lyrics)?;
+				Ok(true)
+			}
+			Action::SyncTimestamp => {
+				let player = state
+					.audio
+					.audio_player
+					.as_ref()
+					.ok_or(eyre::eyre!("No audio playing"))?;
+				state
+					.lyrics
+					.set_timestamp(state.cursor.pos(), Some(player.position()))?;
+				state
+					.cursor
+					.set_y(state.cursor.pos().y + 1)
+					.update_pos(state.lyrics.lyrics.line_lenghts())
+					.update_scroll(
+						Position::new(
+							state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+							state.lyrics.lyrics.line_count(),
+						),
+						state.lyrics.screen_size,
+						state.config.settings.scrolloff,
+					);
+				state.cursor.set_y(state.cursor.pos().y);
+				Ok(true)
+			}
+			Action::AdjustTimestamp(centis) => {
+				let current_timestamp = state
+					.lyrics
+					.lyrics
+					.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
+					.ok_or_eyre("No timestamp at cursor")?
+					.time();
+				let timestamp = Duration::from_millis(max(
+					current_timestamp.as_millis() as i32 + centis * 10,
+					0,
+				) as u64);
+				state
+					.lyrics
+					.set_timestamp(state.cursor.pos(), Some(timestamp))?;
 				Ok(true)
 			}
 			_ => Ok(false),

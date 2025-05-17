@@ -11,9 +11,9 @@ libasound.so=2-xx
 Initial release:
 
 - [ ] import/export lrc sidecar files
-- [ ] sync lyrics to current progress
+- [x] sync lyrics to current progress
 - [ ] vim like keybinds
-- [ ] adjust timestamp per line
+- [x] adjust timestamp per line
 - [ ] edit lyrics in text editor
 - [ ] browse directory
 
@@ -40,7 +40,8 @@ Global:
 
 Lyrics editor view:
 
-- [ ] Space: sync lyrics to current time and select next line
+- [x] Space: sync lyrics to current time and select next line
+- [ ] ^w: save
 - [x] j: cursor down
 - [x] k: cursor up
 - [x] h: cursor left
@@ -58,19 +59,19 @@ Lyrics editor view:
 - [ ] w: cursor to next \[w]ord
 - [ ] e: cursor to \[e]nd of word
 - [ ] b: cursor \[b]ackward by a word
-- [ ] u: \[u]ndo
-- [ ] ^r: \[^r]edo
+- [x] u: \[u]ndo
+- [x] ^r: \[^r]edo
 - [x] f: play \[f]rom selected word (karaoke)
 - [x] F: play \[F]rom selected line
 - [x] t: go \[t]o currently playing word (karaoke)
 - [x] T: go \[T]o start of currently playing line
-- [ ] s: increment timestamp by a \[s]econd
-- [ ] S: decrement timestamp by a \[S]econd
-- [ ] d: increment timestamp by a \[d]ecisecond (0.10)
-- [ ] D: decrement timestamp by a \[D]ecisecond (0.10)
-- [ ] c: increment timestamp by a \[c]entisecond (0.01)
-- [ ] C: decrement timestamp by a \[C]entisecond (0.01)
-- [ ] ^s: set timestamp average of surrounding
+- [x] s: increment timestamp by a \[s]econd
+- [x] S: decrement timestamp by a \[S]econd
+- [x] d: increment timestamp by a \[d]ecisecond (0.10s)
+- [x] D: decrement timestamp by a \[D]ecisecond (0.10s)
+- [x] c: increment timestamp by a \[c]entisecond (0.01s)
+- [x] C: decrement timestamp by a \[C]entisecond (0.01s)
+- [ ] ^s: set timestamp average of \[s]urrounding
 - [ ] x: delete timestamp
 - [ ] X: delete line
 - [ ] y: \[y]ank timestamp

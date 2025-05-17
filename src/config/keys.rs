@@ -40,6 +40,10 @@ pub enum Action {
 	ChangeVolume(i16),
 	ChangeSpeed(i16),
 	ResetSpeed,
+	Undo,
+	Redo,
+	SyncTimestamp,
+	AdjustTimestamp(i32),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -90,6 +94,18 @@ impl Default for KeyMap {
 				(KeyChord::from_char('-'), Action::ChangeSpeed(-5)),
 				(KeyChord::from_char('+'), Action::ChangeSpeed(5)),
 				(KeyChord::from_char('='), Action::ResetSpeed),
+				(KeyChord::from_char('u'), Action::Undo),
+				(
+					KeyChord::new(KeyCode::Char('r'), KeyModifiers::CONTROL),
+					Action::Redo,
+				),
+				(KeyChord::from_char(' '), Action::SyncTimestamp),
+				(KeyChord::from_char('s'), Action::AdjustTimestamp(100)),
+				(KeyChord::from_char('S'), Action::AdjustTimestamp(-100)),
+				(KeyChord::from_char('d'), Action::AdjustTimestamp(10)),
+				(KeyChord::from_char('D'), Action::AdjustTimestamp(-10)),
+				(KeyChord::from_char('c'), Action::AdjustTimestamp(1)),
+				(KeyChord::from_char('C'), Action::AdjustTimestamp(-1)),
 			]),
 		}
 	}
