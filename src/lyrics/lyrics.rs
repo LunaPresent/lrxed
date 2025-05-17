@@ -93,6 +93,10 @@ impl Lyrics {
 		self.lines.as_slice()
 	}
 
+	pub fn lines_mut(&mut self) -> &mut [LyricLine] {
+		self.lines.as_mut_slice()
+	}
+
 	pub fn line_count(&self) -> u16 {
 		self.lines.len() as u16
 	}

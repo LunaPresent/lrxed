@@ -11,6 +11,13 @@ impl LyricLine {
 		Self { timestamp, text }
 	}
 
+	pub fn set_timestamp<T>(&mut self, timestamp: Option<T>)
+	where
+		T: Into<Timestamp>,
+	{
+		self.timestamp = timestamp.map(|x| x.into());
+	}
+
 	pub fn timestamp(&self) -> Option<&Timestamp> {
 		self.timestamp.as_ref()
 	}
