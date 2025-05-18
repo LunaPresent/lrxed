@@ -7,18 +7,32 @@ use color_eyre::eyre;
 
 use super::{Timestamp, lyric_line::LyricLine, metadata::Metadata};
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Lyrics {
 	metadata: Vec<Metadata>,
 	lines: Vec<LyricLine>,
 }
 
+impl Default for Lyrics {
+	fn default() -> Self {
+		Self {
+			metadata: Default::default(),
+			lines: vec![LyricLine::default()],
+		}
+	}
+}
+
 impl Lyrics {
 	pub fn from_file(file: File) -> eyre::Result<Self> {
 		let reader = BufReader::new(file);
-		let mut lyrics = Lyrics::default();
+		let mut lyrics = Lyrics {
+			..Default::default()
+		};
 		for line in reader.lines() {
 			lyrics.parse_append(&format!("{}\n", &line?));
+		}
+		if lyrics.lines.is_empty() {
+			lyrics.lines.push(Default::default());
 		}
 		Ok(lyrics)
 	}
