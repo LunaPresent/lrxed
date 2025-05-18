@@ -18,7 +18,7 @@ impl Lyrics {
 		let reader = BufReader::new(file);
 		let mut lyrics = Lyrics::default();
 		for line in reader.lines() {
-			lyrics.parse_append(&line?);
+			lyrics.parse_append(&format!("{}\n", &line?));
 		}
 		Ok(lyrics)
 	}
