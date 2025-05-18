@@ -1,4 +1,7 @@
-use std::{fs::File, time::Duration};
+use std::{
+	fs::{File, OpenOptions},
+	time::Duration,
+};
 
 use color_eyre::eyre;
 use ratatui::layout::Position;
@@ -11,6 +14,7 @@ use crate::lyrics::{
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct LyricsState {
 	pub lyrics: Lyrics,
+	pub lrc_file_path: String,
 	pub time_index: TimeIndex,
 	pub time_index_hint: TimeIndexHint,
 	pub screen_size: Position,
@@ -18,10 +22,23 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
-	pub fn load_file(&mut self, file: File) -> eyre::Result<()> {
-		self.lyrics = Lyrics::from_file(file)?;
+	pub fn load_file(&mut self, lrc_path: &str) -> eyre::Result<()> {
+		self.lrc_file_path = lrc_path.to_owned();
+		self.lyrics = Lyrics::from_file(File::open(lrc_path)?)?;
 		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
+		Ok(())
+	}
+
+	pub fn write_to_file(&self) -> eyre::Result<()> {
+		self.lyrics.write_to_file(
+			OpenOptions::new()
+				.read(false)
+				.write(true)
+				.create(true)
+				.truncate(true)
+				.open(&self.lrc_file_path)?,
+		)?;
 		Ok(())
 	}
 

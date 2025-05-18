@@ -27,6 +27,10 @@ impl InputHandler for EditorView {
 
 	fn handle_input(&mut self, action: Action, state: &mut AppState) -> eyre::Result<bool> {
 		match action {
+			Action::Save => {
+				state.lyrics.write_to_file()?;
+				Ok(true)
+			}
 			Action::MoveCursorY(offset) => {
 				state
 					.cursor

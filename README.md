@@ -10,20 +10,22 @@ libasound.so=2-xx
 
 Initial release:
 
-- [ ] import/export lrc sidecar files
+- [x] import/export lrc sidecar files
 - [x] sync lyrics to current progress
-- [ ] vim like keybinds
 - [x] adjust timestamp per line
 - [ ] edit lyrics in text editor
 - [ ] browse directory
+- [ ] user config
 
 Future:
 
+- [ ] media keys / playerctl support
 - [ ] lrc tags integration
 - [ ] lrclib integration
 - [ ] enhanced lrc support (karaoke lyrics)
 - [ ] match lrc files according to a naming scheme
 - [ ] import/export id3 lyrics frames
+- [ ] sync with external music player (mpris)
 
 Non-goals:
 
@@ -41,7 +43,7 @@ Global:
 Lyrics editor view:
 
 - [x] Space: sync lyrics to current time and select next line
-- [ ] ^w: save
+- [x] ^w: save
 - [x] j: cursor down
 - [x] k: cursor up
 - [x] h: cursor left

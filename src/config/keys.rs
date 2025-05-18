@@ -25,6 +25,7 @@ impl KeyChord {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Action {
 	Quit,
+	Save,
 	MoveCursorY(i16),
 	MoveCursorX(i16),
 	SetCursorY(u16),
@@ -61,6 +62,10 @@ impl Default for KeyMap {
 	fn default() -> Self {
 		Self {
 			map: HashMap::from([
+				(
+					KeyChord::new(KeyCode::Char('w'), KeyModifiers::CONTROL),
+					Action::Save,
+				),
 				(KeyChord::from_char('q'), Action::Quit),
 				(KeyChord::from_char('j'), Action::MoveCursorY(1)),
 				(KeyChord::from_char('k'), Action::MoveCursorY(-1)),
