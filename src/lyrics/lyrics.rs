@@ -68,7 +68,11 @@ impl Lyrics {
 
 			if let (Some(tag_delim), Some(tag_end)) = (tag_delim, tag_end) {
 				let line = line.trim_start();
-				self.parse_append_line_with_tag(&line[1..tag_end], tag_delim, &line[tag_end + 2..]);
+				self.parse_append_line_with_tag(
+					&line[1..tag_end + 1],
+					tag_delim,
+					&line[tag_end + 2..],
+				);
 			} else {
 				self.parse_append_line(line);
 			}
