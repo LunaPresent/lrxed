@@ -1,11 +1,13 @@
 {
-  rustPlatform,
-  pkg-config,
   alsa-lib,
+  lib,
+  pkg-config,
+  rustPlatform,
+  stdenv,
 }:
 let
   root = ../../../.;
-  cargo = builtins.fromTOML (builtins.readFile "${root}/Cargo.toml");
+  cargo = lib.importTOML "${root}/Cargo.toml";
 in
 rustPlatform.buildRustPackage {
   pname = cargo.package.name;
@@ -14,7 +16,7 @@ rustPlatform.buildRustPackage {
   cargoLock.lockFile = "${root}/Cargo.lock";
 
   nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ alsa-lib ];
+  buildInputs = if stdenv.hostPlatform.isLinux then [ alsa-lib ] else [ ];
 
   meta = {
     description = "A tui application for synchronising lyrics.";
