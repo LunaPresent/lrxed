@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{cmp, time::Duration};
 
 use super::lyric_line::LyricLine;
 
@@ -31,24 +31,34 @@ impl Default for TimeIndex {
 
 impl TimeIndex {
 	pub fn new<'a>(lyrics: impl Iterator<Item = &'a LyricLine>) -> Self {
-		let mut entries: Vec<TimeIndexEntry> = std::iter::once(TimeIndexEntry {
-			time: Duration::ZERO,
-			line_num: None,
-		})
-		.chain(
-			lyrics
-				.enumerate()
-				.filter_map(|(i, line)| match line.timestamp() {
-					Some(timestamp) => Some(TimeIndexEntry {
-						time: timestamp.time(),
-						line_num: Some(i as u16),
+		let mut x = Self {
+			entries: Vec::default(),
+		};
+		x.rebuild(lyrics);
+		x
+	}
+
+	pub fn rebuild<'a>(&mut self, lyrics: impl Iterator<Item = &'a LyricLine>) {
+		self.entries.clear();
+		self.entries.extend(
+			std::iter::once(TimeIndexEntry {
+				time: Duration::ZERO,
+				line_num: None,
+			})
+			.chain(
+				lyrics
+					.enumerate()
+					.filter_map(|(i, line)| match line.timestamp() {
+						Some(timestamp) => Some(TimeIndexEntry {
+							time: timestamp.time(),
+							line_num: Some(i as u16),
+						}),
+						None => None,
 					}),
-					None => None,
-				}),
-		)
-		.collect();
-		entries.sort_unstable_by(|a, b| a.time.cmp(&b.time).then(a.line_num.cmp(&b.line_num)));
-		Self { entries }
+			),
+		);
+		self.entries
+			.sort_unstable_by(|a, b| a.time.cmp(&b.time).then(a.line_num.cmp(&b.line_num)));
 	}
 
 	pub fn find_random(&self, time: Duration) -> (TimeIndexEntry, TimeIndexHint) {
@@ -74,7 +84,7 @@ impl TimeIndex {
 	}
 
 	pub fn find_seq(&self, time: Duration, hint: TimeIndexHint) -> (TimeIndexEntry, TimeIndexHint) {
-		let mut idx = hint.idx;
+		let mut idx = cmp::min(hint.idx, self.entries.len() - 1);
 		while time < self.entries[idx].time {
 			if idx == 0 {
 				return (

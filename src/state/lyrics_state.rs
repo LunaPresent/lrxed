@@ -44,8 +44,9 @@ impl LyricsState {
 				timestamp: prev_val,
 			},
 		);
-		edit.execute_forwards(&mut self.lyrics)?;
+		edit.execute_forwards(&mut self.lyrics, &mut self.time_index)?;
 		self.history.push(edit);
+
 		Ok(())
 	}
 }
