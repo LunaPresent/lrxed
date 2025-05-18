@@ -1,6 +1,6 @@
 use std::{
 	fs::File,
-	io::{BufRead, BufReader},
+	io::{BufRead, BufReader, BufWriter, Write},
 };
 
 use color_eyre::eyre;
@@ -21,6 +21,19 @@ impl Lyrics {
 			lyrics.parse_append(&format!("{}\n", &line?));
 		}
 		Ok(lyrics)
+	}
+
+	pub fn write_to_file(&self, file: File) -> eyre::Result<()> {
+		let mut writer = BufWriter::new(file);
+		for line in &self.lines {
+			if let Some(timestamp) = line.timestamp() {
+				writeln!(writer, "[{}] {}", timestamp.text(), line.text())?;
+			} else {
+				writeln!(writer, "{}", line.text())?;
+			}
+		}
+		writer.flush()?;
+		Ok(())
 	}
 
 	pub fn parse_append(&mut self, s: &str) {
