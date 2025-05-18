@@ -1,6 +1,6 @@
 use color_eyre::eyre;
 
-use crate::lyrics::Lyrics;
+use crate::lyrics::{Lyrics, TimeIndex};
 
 use super::Edit;
 
@@ -16,17 +16,17 @@ impl History {
 		self.redo_stack.clear();
 	}
 
-	pub fn undo(&mut self, lyrics: &mut Lyrics) -> eyre::Result<()> {
+	pub fn undo(&mut self, lyrics: &mut Lyrics, time_index: &mut TimeIndex) -> eyre::Result<()> {
 		if let Some(edit) = self.undo_stack.pop() {
-			edit.execute_backwards(lyrics)?;
+			edit.execute_backwards(lyrics, time_index)?;
 			self.redo_stack.push(edit);
 		}
 		Ok(())
 	}
 
-	pub fn redo(&mut self, lyrics: &mut Lyrics) -> eyre::Result<()> {
+	pub fn redo(&mut self, lyrics: &mut Lyrics, time_index: &mut TimeIndex) -> eyre::Result<()> {
 		if let Some(edit) = self.redo_stack.pop() {
-			edit.execute_forwards(lyrics)?;
+			edit.execute_forwards(lyrics, time_index)?;
 			self.undo_stack.push(edit);
 		}
 		Ok(())

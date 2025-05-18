@@ -10,6 +10,7 @@ use ratatui::{
 };
 
 use crate::{
+	audio::AudioPlayer,
 	config::Action,
 	state::AppState,
 	tui::{
@@ -89,11 +90,7 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::CursorToPlaying => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 
 				// TODO: get cursor x position from time and set it
 				let time;
@@ -119,11 +116,7 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::CursorToPlayingLine => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 
 				let time;
 				(time, state.lyrics.time_index_hint) = state
@@ -155,11 +148,7 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::SeekBackwards => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				let pos = player.position();
 				player.seek(
 					pos - min(
@@ -170,22 +159,14 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::SeekForwards => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				player.seek(
 					player.position() + Duration::from_secs_f32(state.config.settings.jump_seconds),
 				)?;
 				Ok(true)
 			}
 			Action::SeekToCursor => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 
 				if let Some(timestamp) = state
 					.lyrics
@@ -199,11 +180,7 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::SeekToCursorLine => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 
 				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.cursor.pos().y) {
 					player.seek(timestamp.time() + Duration::from_millis(1))?;
@@ -213,57 +190,43 @@ impl InputHandler for EditorView {
 				Ok(true)
 			}
 			Action::TogglePause => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				player.set_paused(!player.is_paused());
 				Ok(true)
 			}
 			Action::ChangeVolume(pct) => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				let volume = (player.volume() * 100. + 0.5) as i16 + pct;
 				player.set_volume(min(max(volume, 0), 100) as f32 / 100.);
 				Ok(true)
 			}
 			Action::ChangeSpeed(pct) => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				let speed = (player.speed() * 100. + 0.5) as i16 + pct;
 				player.set_speed(min(max(speed, 50), 200) as f32 / 100.);
 				Ok(true)
 			}
 			Action::ResetSpeed => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				player.set_speed(1.);
 				Ok(true)
 			}
 			Action::Undo => {
-				state.lyrics.history.undo(&mut state.lyrics.lyrics)?;
+				state
+					.lyrics
+					.history
+					.undo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
 				Ok(true)
 			}
 			Action::Redo => {
-				state.lyrics.history.redo(&mut state.lyrics.lyrics)?;
+				state
+					.lyrics
+					.history
+					.redo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
 				Ok(true)
 			}
 			Action::SyncTimestamp => {
-				let player = state
-					.audio
-					.audio_player
-					.as_ref()
-					.ok_or(eyre::eyre!("No audio playing"))?;
+				let player = get_player(state)?;
 				state
 					.lyrics
 					.set_timestamp(state.cursor.pos(), Some(player.position()))?;
@@ -301,6 +264,14 @@ impl InputHandler for EditorView {
 			_ => Ok(false),
 		}
 	}
+}
+
+fn get_player(state: &AppState) -> eyre::Result<&AudioPlayer> {
+	state
+		.audio
+		.audio_player
+		.as_ref()
+		.ok_or_eyre("No audio playing")
 }
 
 impl StatefulWidget for EditorView {

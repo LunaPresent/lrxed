@@ -1,6 +1,6 @@
 use color_eyre::eyre;
 
-use crate::lyrics::Lyrics;
+use crate::lyrics::{Lyrics, TimeIndex};
 
 use super::edit_action::EditAction;
 
@@ -18,11 +18,19 @@ impl Edit {
 		}
 	}
 
-	pub fn execute_forwards(&self, lyrics: &mut Lyrics) -> eyre::Result<()> {
-		self.forwards_action.execute(lyrics)
+	pub fn execute_forwards(
+		&self,
+		lyrics: &mut Lyrics,
+		time_index: &mut TimeIndex,
+	) -> eyre::Result<()> {
+		self.forwards_action.execute(lyrics, time_index)
 	}
 
-	pub fn execute_backwards(&self, lyrics: &mut Lyrics) -> eyre::Result<()> {
-		self.backwards_action.execute(lyrics)
+	pub fn execute_backwards(
+		&self,
+		lyrics: &mut Lyrics,
+		time_index: &mut TimeIndex,
+	) -> eyre::Result<()> {
+		self.backwards_action.execute(lyrics, time_index)
 	}
 }
