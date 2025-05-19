@@ -20,21 +20,20 @@ async fn main() -> Result<()> {
 	color_eyre::install()?;
 	let terminal = ratatui::init();
 
-	let mut state = AppState::default();
-	let mut app: App;
+	let mut state: AppState;
 
 	if let Some(filename) = args.audio_file() {
-		app = App::new(View::Editor);
+		state = AppState::new(View::Editor);
 		state.audio.audio_player = Some(state.audio.audio_device.try_play(filename)?);
 		let lrc_path = Path::new(filename).with_extension("lrc");
 		if lrc_path.exists() {
 			state.lyrics.load_file(lrc_path.to_str().unwrap())?;
 		}
 	} else {
-		app = App::new(View::FileTree);
+		state = AppState::new(View::FileTree);
 	}
 
-	let app_result = app.run(terminal, &mut state).await;
+	let app_result = App.run(terminal, &mut state).await;
 	ratatui::restore();
 	app_result
 }

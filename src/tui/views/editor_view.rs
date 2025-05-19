@@ -25,7 +25,7 @@ pub struct EditorView;
 impl InputHandler for EditorView {
 	type State = AppState;
 
-	fn handle_input(&mut self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
+	fn handle_input(self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
 		match state
 			.config
 			.keys

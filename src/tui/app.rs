@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use color_eyre::{Result, eyre};
-use crossterm::event::{Event, EventStream, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{DefaultTerminal, Frame, buffer::Buffer, layout::Rect, widgets::StatefulWidget};
 use tokio_stream::StreamExt;
 
@@ -11,38 +11,23 @@ use crate::{
 };
 
 use super::{
+	View,
 	input_handler::InputHandler,
 	views::{EditorView, FileTreeView},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum View {
-	FileTree,
-	Editor,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct App {
-	active_view: View,
-	should_quit: bool,
-}
+pub struct App;
 
 impl App {
 	const FRAMES_PER_SECOND: f32 = 60.0;
 
-	pub fn new(initial_view: View) -> Self {
-		Self {
-			active_view: initial_view,
-			should_quit: false,
-		}
-	}
-
-	pub async fn run(&mut self, mut terminal: DefaultTerminal, state: &mut AppState) -> Result<()> {
+	pub async fn run(self, mut terminal: DefaultTerminal, state: &mut AppState) -> Result<()> {
 		let period = Duration::from_secs_f32(1.0 / Self::FRAMES_PER_SECOND);
 		let mut interval = tokio::time::interval(period);
 		let mut events = EventStream::new();
 
-		while !self.should_quit {
+		while !state.should_quit {
 			tokio::select! {
 				_ = interval.tick() => { terminal.draw(|frame| self.draw(frame, state))?; },
 				Some(Ok(mut event)) = events.next() => self.handle_event(&mut event, state),
@@ -56,7 +41,7 @@ impl App {
 		frame.set_cursor_position(state.cursor.render_pos());
 	}
 
-	fn handle_event(&mut self, event: &mut Event, state: &mut AppState) {
+	fn handle_event(self, event: &mut Event, state: &mut AppState) {
 		let result = match event {
 			Event::Key(key) if key.kind == KeyEventKind::Press => {
 				if let KeyCode::Char(_) = key.code {
@@ -75,8 +60,8 @@ impl App {
 impl InputHandler for App {
 	type State = AppState;
 
-	fn handle_input(&mut self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
-		let consumed = match self.active_view {
+	fn handle_input(self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
+		let consumed = match state.active_view {
 			View::FileTree => FileTreeView.handle_input(key_chord, state),
 			View::Editor => EditorView.handle_input(key_chord, state),
 		}?;
@@ -84,7 +69,7 @@ impl InputHandler for App {
 			match state.config.keys.get_action(key_chord, Context::Global) {
 				// global keys here
 				Some(Action::Quit) => {
-					self.should_quit = true;
+					state.should_quit = true;
 					Ok(true)
 				}
 				_ => Ok(false),
@@ -102,7 +87,7 @@ impl StatefulWidget for App {
 	where
 		Self: Sized,
 	{
-		match self.active_view {
+		match state.active_view {
 			View::FileTree => FileTreeView.render(area, buf, state),
 			View::Editor => EditorView.render(area, buf, state),
 		};

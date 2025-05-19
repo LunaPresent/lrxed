@@ -9,7 +9,7 @@ pub struct FileTreeView;
 impl InputHandler for FileTreeView {
 	type State = AppState;
 
-	fn handle_input(&mut self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
+	fn handle_input(self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
 		Ok(false)
 	}
 }
