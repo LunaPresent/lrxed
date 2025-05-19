@@ -26,7 +26,8 @@ impl Lyrics {
 	pub fn from_file(file: File) -> eyre::Result<Self> {
 		let reader = BufReader::new(file);
 		let mut lyrics = Lyrics {
-			..Default::default()
+			metadata: Default::default(),
+			lines: Default::default(),
 		};
 		for line in reader.lines() {
 			lyrics.parse_append(&format!("{}\n", &line?));
