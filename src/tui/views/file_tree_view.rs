@@ -1,7 +1,7 @@
 use color_eyre::eyre;
 use ratatui::widgets::StatefulWidget;
 
-use crate::{config::Action, state::AppState, tui::input_handler::InputHandler};
+use crate::{config::KeyChord, state::AppState, tui::input_handler::InputHandler};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileTreeView;
@@ -9,7 +9,7 @@ pub struct FileTreeView;
 impl InputHandler for FileTreeView {
 	type State = AppState;
 
-	fn handle_input(&mut self, action: Action, state: &mut Self::State) -> eyre::Result<bool> {
+	fn handle_input(&mut self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
 		Ok(false)
 	}
 }

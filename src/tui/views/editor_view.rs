@@ -11,7 +11,7 @@ use ratatui::{
 
 use crate::{
 	audio::AudioPlayer,
-	config::Action,
+	config::{Action, Context, KeyChord},
 	state::AppState,
 	tui::{
 		input_handler::InputHandler,
@@ -25,13 +25,18 @@ pub struct EditorView;
 impl InputHandler for EditorView {
 	type State = AppState;
 
-	fn handle_input(&mut self, action: Action, state: &mut AppState) -> eyre::Result<bool> {
-		match action {
-			Action::Save => {
+	fn handle_input(&mut self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
+		match state
+			.config
+			.keys
+			.get_action(key_chord, Context::Editor)
+			.or(state.config.keys.get_action(key_chord, Context::Global))
+		{
+			Some(Action::Save) => {
 				state.lyrics.write_to_file()?;
 				Ok(true)
 			}
-			Action::MoveCursorY(offset) => {
+			Some(Action::MoveCursorY(offset)) => {
 				state
 					.cursor
 					.set_y(max(state.cursor.pos().y as i16 + offset, 0) as u16)
@@ -47,7 +52,7 @@ impl InputHandler for EditorView {
 				state.cursor.set_y(state.cursor.pos().y);
 				Ok(true)
 			}
-			Action::MoveCursorX(offset) => {
+			Some(Action::MoveCursorX(offset)) => {
 				state
 					.cursor
 					.set_x(max(state.cursor.pos().x as i16 + offset, 0) as u16)
@@ -63,7 +68,7 @@ impl InputHandler for EditorView {
 				state.cursor.set_x(state.cursor.pos().x);
 				Ok(true)
 			}
-			Action::SetCursorY(y) => {
+			Some(Action::SetCursorY(y)) => {
 				state
 					.cursor
 					.set_y(y)
@@ -78,7 +83,7 @@ impl InputHandler for EditorView {
 					);
 				Ok(true)
 			}
-			Action::SetCursorX(x) => {
+			Some(Action::SetCursorX(x)) => {
 				state
 					.cursor
 					.set_x(x)
@@ -93,7 +98,7 @@ impl InputHandler for EditorView {
 					);
 				Ok(true)
 			}
-			Action::CursorToPlaying => {
+			Some(Action::CursorToPlaying) => {
 				let player = get_player(state)?;
 
 				// TODO: get cursor x position from time and set it
@@ -119,7 +124,7 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			Action::CursorToPlayingLine => {
+			Some(Action::CursorToPlayingLine) => {
 				let player = get_player(state)?;
 
 				let time;
@@ -144,14 +149,14 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			Action::SeekRelative(relative_pos) => {
+			Some(Action::SeekRelative(relative_pos)) => {
 				let pos = state.audio.seek_relative(relative_pos)?;
 				if let Some(time) = pos {
 					(_, state.lyrics.time_index_hint) = state.lyrics.time_index.find_random(time);
 				}
 				Ok(true)
 			}
-			Action::SeekBackwards => {
+			Some(Action::SeekBackwards) => {
 				let player = get_player(state)?;
 				let pos = player.position();
 				player.seek(
@@ -162,14 +167,14 @@ impl InputHandler for EditorView {
 				)?;
 				Ok(true)
 			}
-			Action::SeekForwards => {
+			Some(Action::SeekForwards) => {
 				let player = get_player(state)?;
 				player.seek(
 					player.position() + Duration::from_secs_f32(state.config.settings.jump_seconds),
 				)?;
 				Ok(true)
 			}
-			Action::SeekToCursor => {
+			Some(Action::SeekToCursor) => {
 				let player = get_player(state)?;
 
 				if let Some(timestamp) = state
@@ -183,7 +188,7 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			Action::SeekToCursorLine => {
+			Some(Action::SeekToCursorLine) => {
 				let player = get_player(state)?;
 
 				if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.cursor.pos().y) {
@@ -193,43 +198,43 @@ impl InputHandler for EditorView {
 				}
 				Ok(true)
 			}
-			Action::TogglePause => {
+			Some(Action::TogglePause) => {
 				let player = get_player(state)?;
 				player.set_paused(!player.is_paused());
 				Ok(true)
 			}
-			Action::ChangeVolume(pct) => {
+			Some(Action::ChangeVolume(pct)) => {
 				let player = get_player(state)?;
 				let volume = (player.volume() * 100. + 0.5) as i16 + pct;
 				player.set_volume(min(max(volume, 0), 100) as f32 / 100.);
 				Ok(true)
 			}
-			Action::ChangeSpeed(pct) => {
+			Some(Action::ChangeSpeed(pct)) => {
 				let player = get_player(state)?;
 				let speed = (player.speed() * 100. + 0.5) as i16 + pct;
 				player.set_speed(min(max(speed, 50), 200) as f32 / 100.);
 				Ok(true)
 			}
-			Action::ResetSpeed => {
+			Some(Action::ResetSpeed) => {
 				let player = get_player(state)?;
 				player.set_speed(1.);
 				Ok(true)
 			}
-			Action::Undo => {
+			Some(Action::Undo) => {
 				state
 					.lyrics
 					.history
 					.undo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
 				Ok(true)
 			}
-			Action::Redo => {
+			Some(Action::Redo) => {
 				state
 					.lyrics
 					.history
 					.redo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
 				Ok(true)
 			}
-			Action::SyncTimestamp => {
+			Some(Action::SyncTimestamp) => {
 				let player = get_player(state)?;
 				state
 					.lyrics
@@ -249,7 +254,7 @@ impl InputHandler for EditorView {
 				state.cursor.set_y(state.cursor.pos().y);
 				Ok(true)
 			}
-			Action::AdjustTimestamp(centis) => {
+			Some(Action::AdjustTimestamp(centis)) => {
 				let current_timestamp = state
 					.lyrics
 					.lyrics

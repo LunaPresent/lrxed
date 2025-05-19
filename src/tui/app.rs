@@ -6,7 +6,7 @@ use ratatui::{DefaultTerminal, Frame, buffer::Buffer, layout::Rect, widgets::Sta
 use tokio_stream::StreamExt;
 
 use crate::{
-	config::{Action, KeyChord},
+	config::{Action, Context, KeyChord},
 	state::AppState,
 };
 
@@ -62,15 +62,8 @@ impl App {
 				if let KeyCode::Char(_) = key.code {
 					key.modifiers = key.modifiers.difference(KeyModifiers::SHIFT);
 				}
-				if let Some(action) = state
-					.config
-					.keys
-					.get_action(KeyChord::new(key.code, key.modifiers))
-				{
-					self.handle_input(action, state).map(|_| ())
-				} else {
-					Ok(())
-				}
+				self.handle_input(KeyChord::new(key.code, key.modifiers), state)
+					.map(|_| ())
 			}
 			_ => Ok(()),
 		};
@@ -82,15 +75,15 @@ impl App {
 impl InputHandler for App {
 	type State = AppState;
 
-	fn handle_input(&mut self, action: Action, state: &mut Self::State) -> eyre::Result<bool> {
+	fn handle_input(&mut self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
 		let consumed = match self.active_view {
-			View::FileTree => FileTreeView.handle_input(action, state),
-			View::Editor => EditorView.handle_input(action, state),
+			View::FileTree => FileTreeView.handle_input(key_chord, state),
+			View::Editor => EditorView.handle_input(key_chord, state),
 		}?;
 		if !consumed {
-			match action {
+			match state.config.keys.get_action(key_chord, Context::Global) {
 				// global keys here
-				Action::Quit => {
+				Some(Action::Quit) => {
 					self.should_quit = true;
 					Ok(true)
 				}
