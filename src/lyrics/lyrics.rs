@@ -4,6 +4,7 @@ use std::{
 };
 
 use color_eyre::eyre;
+use unicode_width::UnicodeWidthStr;
 
 use super::{Timestamp, lyric_line::LyricLine, metadata::Metadata};
 
@@ -133,8 +134,8 @@ impl Lyrics {
 		self.lines.len() as u16
 	}
 
-	pub fn line_lenghts(&self) -> impl Iterator<Item = u16> {
-		self.lines.iter().map(|x| x.text().len() as u16)
+	pub fn line_widths(&self) -> impl Iterator<Item = u16> {
+		self.lines.iter().map(|x| x.text().width_cjk() as u16)
 	}
 
 	pub fn time_at_line(&self, y: u16) -> Option<&Timestamp> {

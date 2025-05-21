@@ -40,10 +40,10 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(max(state.cursor.pos().y as i16 + offset, 0) as u16)
-						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
 							state.lyrics.screen_size,
@@ -55,10 +55,10 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(max(state.cursor.pos().x as i16 + offset, 0) as u16)
-						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
 							state.lyrics.screen_size,
@@ -70,10 +70,10 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(y)
-						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
 							state.lyrics.screen_size,
@@ -84,10 +84,10 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(x)
-						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
 							state.lyrics.screen_size,
@@ -108,10 +108,10 @@ impl InputHandler for EditorView {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.line_lenghts())
+							.update_pos(state.lyrics.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 									state.lyrics.lyrics.line_count(),
 								),
 								state.lyrics.screen_size,
@@ -132,10 +132,10 @@ impl InputHandler for EditorView {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.line_lenghts())
+							.update_pos(state.lyrics.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 									state.lyrics.lyrics.line_count(),
 								),
 								state.lyrics.screen_size,
@@ -228,10 +228,10 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(state.cursor.pos().y + 1)
-						.update_pos(state.lyrics.lyrics.line_lenghts())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_lenghts().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
 							state.lyrics.screen_size,
