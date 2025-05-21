@@ -139,10 +139,6 @@ impl Default for KeyMap {
 		]);
 		keymap.map[Context::ConfirmBox as usize] = HashMap::from([
 			(KeyChord::from_char('y'), Action::Yes),
-			(
-				KeyChord::new(KeyCode::Enter, KeyModifiers::NONE),
-				Action::Yes,
-			),
 			(KeyChord::from_char('n'), Action::No),
 			(KeyChord::from_char('c'), Action::Cancel),
 		]);
