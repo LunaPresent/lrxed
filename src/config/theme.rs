@@ -1,7 +1,10 @@
-use ratatui::style::{Color, Modifier, Style};
+use ratatui::style::{Modifier, Style, Stylize};
 
 #[derive(Debug, Clone)]
 pub struct Theme {
+	pub button_active: Style,
+	pub button_inactive: Style,
+	pub confirm_box: Style,
 	pub cursorline: Style,
 	pub lyrics_line: Style,
 }
@@ -9,7 +12,10 @@ pub struct Theme {
 impl Default for Theme {
 	fn default() -> Self {
 		Self {
-			cursorline: Style::new().bg(Color::Rgb(65, 69, 89)),
+			button_active: Style::new().blue().on_black(),
+			button_inactive: Style::new().on_black(),
+			confirm_box: Style::new().yellow(),
+			cursorline: Style::new().on_black(),
 			lyrics_line: Style::new().add_modifier(Modifier::BOLD),
 		}
 	}

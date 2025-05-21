@@ -27,12 +27,17 @@ impl KeyChord {
 pub enum Context {
 	Global,
 	Editor,
+	ConfirmBox,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Action {
 	NoOp,
 	Quit,
+	Confirm,
+	Cancel,
+	Yes,
+	No,
 	Save,
 	MoveCursorY(i16),
 	MoveCursorX(i16),
@@ -73,6 +78,14 @@ impl Default for KeyMap {
 		};
 		keymap.map[Context::Global as usize] = HashMap::from([
 			(KeyChord::from_char('q'), Action::Quit),
+			(
+				KeyChord::new(KeyCode::Enter, KeyModifiers::NONE),
+				Action::Confirm,
+			),
+			(
+				KeyChord::new(KeyCode::Esc, KeyModifiers::NONE),
+				Action::Cancel,
+			),
 			(KeyChord::from_char('j'), Action::MoveCursorY(1)),
 			(KeyChord::from_char('k'), Action::MoveCursorY(-1)),
 			(KeyChord::from_char('h'), Action::MoveCursorX(-1)),
@@ -123,6 +136,15 @@ impl Default for KeyMap {
 			(KeyChord::from_char('D'), Action::AdjustTimestamp(-10)),
 			(KeyChord::from_char('c'), Action::AdjustTimestamp(1)),
 			(KeyChord::from_char('C'), Action::AdjustTimestamp(-1)),
+		]);
+		keymap.map[Context::ConfirmBox as usize] = HashMap::from([
+			(KeyChord::from_char('y'), Action::Yes),
+			(
+				KeyChord::new(KeyCode::Enter, KeyModifiers::NONE),
+				Action::Yes,
+			),
+			(KeyChord::from_char('n'), Action::No),
+			(KeyChord::from_char('c'), Action::Cancel),
 		]);
 		keymap
 	}

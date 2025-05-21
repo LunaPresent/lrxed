@@ -11,9 +11,9 @@ use crate::{
 };
 
 use super::{
-	View,
+	Modal, View,
 	input_handler::InputHandler,
-	views::{EditorView, FileTreeView},
+	views::{ConfirmQuitModal, EditorView, FileTreeView},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -61,15 +61,25 @@ impl InputHandler for App {
 	type State = AppState;
 
 	fn handle_input(self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
-		let consumed = match state.active_view {
-			View::FileTree => FileTreeView.handle_input(key_chord, state),
-			View::Editor => EditorView.handle_input(key_chord, state),
-		}?;
+		let consumed = if let Some(modal) = state.active_modal {
+			match modal {
+				Modal::ConfirmQuit => ConfirmQuitModal.handle_input(key_chord, state),
+			}?
+		} else {
+			match state.active_view {
+				View::FileTree => FileTreeView.handle_input(key_chord, state),
+				View::Editor => EditorView.handle_input(key_chord, state),
+			}?
+		};
 		if !consumed {
 			match state.config.keys.get_action(key_chord, Context::Global) {
 				// global keys here
 				Some(Action::Quit) => {
-					state.should_quit = true;
+					if state.lyrics.changed {
+						state.active_modal = Some(Modal::ConfirmQuit);
+					} else {
+						state.should_quit = true;
+					}
 					Ok(true)
 				}
 				_ => Ok(false),
@@ -91,5 +101,10 @@ impl StatefulWidget for App {
 			View::FileTree => FileTreeView.render(area, buf, state),
 			View::Editor => EditorView.render(area, buf, state),
 		};
+		if let Some(modal) = state.active_modal {
+			match modal {
+				Modal::ConfirmQuit => ConfirmQuitModal.render(area, buf, state),
+			};
+		}
 	}
 }

@@ -19,6 +19,7 @@ pub struct LyricsState {
 	pub time_index_hint: TimeIndexHint,
 	pub screen_size: Position,
 	pub history: History,
+	pub changed: bool,
 }
 
 impl LyricsState {
@@ -30,7 +31,7 @@ impl LyricsState {
 		Ok(())
 	}
 
-	pub fn write_to_file(&self) -> eyre::Result<()> {
+	pub fn write_to_file(&mut self) -> eyre::Result<()> {
 		self.lyrics.write_to_file(
 			OpenOptions::new()
 				.read(false)
@@ -39,6 +40,7 @@ impl LyricsState {
 				.truncate(true)
 				.open(&self.lrc_file_path)?,
 		)?;
+		self.changed = false;
 		Ok(())
 	}
 
@@ -63,6 +65,7 @@ impl LyricsState {
 		);
 		edit.execute_forwards(&mut self.lyrics, &mut self.time_index)?;
 		self.history.push(edit);
+		self.changed = true;
 
 		Ok(())
 	}
