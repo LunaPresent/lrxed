@@ -1,5 +1,6 @@
 use std::{
 	fs::{File, OpenOptions},
+	io::{BufReader, BufWriter},
 	time::Duration,
 };
 
@@ -25,21 +26,21 @@ pub struct LyricsState {
 impl LyricsState {
 	pub fn load_file(&mut self, lrc_path: &str) -> eyre::Result<()> {
 		self.lrc_file_path = lrc_path.to_owned();
-		self.lyrics = Lyrics::from_file(File::open(lrc_path)?)?;
+		self.lyrics = Lyrics::from_buf(BufReader::new(File::open(lrc_path)?))?;
 		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
 		Ok(())
 	}
 
 	pub fn write_to_file(&mut self) -> eyre::Result<()> {
-		self.lyrics.write_to_file(
+		self.lyrics.write(BufWriter::new(
 			OpenOptions::new()
 				.read(false)
 				.write(true)
 				.create(true)
 				.truncate(true)
 				.open(&self.lrc_file_path)?,
-		)?;
+		))?;
 		self.changed = false;
 		Ok(())
 	}

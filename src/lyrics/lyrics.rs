@@ -1,7 +1,4 @@
-use std::{
-	fs::File,
-	io::{BufRead, BufReader, BufWriter, Write},
-};
+use std::io::{BufRead, Read, Write};
 
 use color_eyre::eyre;
 use unicode_width::UnicodeWidthStr;
@@ -24,8 +21,7 @@ impl Default for Lyrics {
 }
 
 impl Lyrics {
-	pub fn from_file(file: File) -> eyre::Result<Self> {
-		let reader = BufReader::new(file);
+	pub fn from_buf(reader: impl Read + BufRead) -> eyre::Result<Self> {
 		let mut lyrics = Lyrics {
 			metadata: Default::default(),
 			lines: Default::default(),
@@ -39,8 +35,7 @@ impl Lyrics {
 		Ok(lyrics)
 	}
 
-	pub fn write_to_file(&self, file: File) -> eyre::Result<()> {
-		let mut writer = BufWriter::new(file);
+	pub fn write(&self, mut writer: impl Write) -> eyre::Result<()> {
 		for line in &self.lines {
 			if let Some(timestamp) = line.timestamp() {
 				writeln!(writer, "[{}] {}", timestamp.text(), line.text())?;
