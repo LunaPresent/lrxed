@@ -135,7 +135,7 @@ impl Lyrics {
 	}
 
 	pub fn line_widths(&self) -> impl Iterator<Item = u16> {
-		self.lines.iter().map(|x| x.text().width_cjk() as u16)
+		self.lines.iter().map(|x| x.text().width() as u16)
 	}
 
 	pub fn time_at_line(&self, y: u16) -> Option<&Timestamp> {

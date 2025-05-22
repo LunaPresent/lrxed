@@ -1,6 +1,7 @@
 use std::{
 	cmp::{max, min},
 	time::Duration,
+	u16,
 };
 
 use color_eyre::eyre::{self, OptionExt};
@@ -8,6 +9,7 @@ use ratatui::{
 	layout::{Constraint, Layout, Position},
 	widgets::StatefulWidget,
 };
+use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::{
 	audio::AudioPlayer,
@@ -52,9 +54,37 @@ impl InputHandler for EditorView {
 					state.cursor.set_y(state.cursor.pos().y);
 				}
 				Action::MoveCursorX(offset) => {
+					let line = state.lyrics.lyrics.lines()[state.cursor.pos().y as usize].text();
+					let x = if offset >= 0 {
+						line.chars()
+							.scan(0, |head, c| {
+								let char_pos = *head as u16;
+								let char_width = c.width().unwrap_or_default() as u16;
+								*head += char_width;
+								Some((char_pos, char_width))
+							})
+							.skip_while(|(char_pos, char_width)| {
+								char_pos + char_width <= state.cursor.pos().x
+							})
+							.map(|(char_pos, _)| char_pos)
+							.nth(offset as usize)
+							.unwrap_or(u16::MAX)
+					} else {
+						line.chars()
+							.rev()
+							.scan(line.width() as u16, |head, c| {
+								let char_width = c.width().unwrap_or_default() as u16;
+								*head -= char_width;
+								Some(*head)
+							})
+							.skip_while(|&char_pos| char_pos > state.cursor.pos().x)
+							.nth(offset.abs() as usize)
+							.unwrap_or_default()
+					};
+
 					state
 						.cursor
-						.set_x(max(state.cursor.pos().x as i16 + offset, 0) as u16)
+						.set_x(max(x, 0) as u16)
 						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
