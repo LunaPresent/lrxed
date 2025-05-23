@@ -284,6 +284,9 @@ impl InputHandler for EditorView {
 						.lyrics
 						.set_timestamp(state.cursor.pos(), Some(timestamp))?;
 				}
+				Action::OpenInEditor => {
+					state.open_in_editor()?;
+				}
 				_ => return Ok(false),
 			}
 			Ok(true)

@@ -1,6 +1,7 @@
 use std::{
 	fs::{File, OpenOptions},
 	io::{BufReader, BufWriter},
+	path::{Path, PathBuf},
 	time::Duration,
 };
 
@@ -15,7 +16,7 @@ use crate::lyrics::{
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct LyricsState {
 	pub lyrics: Lyrics,
-	pub lrc_file_path: String,
+	pub lrc_file_path: PathBuf,
 	pub time_index: TimeIndex,
 	pub time_index_hint: TimeIndexHint,
 	pub screen_size: Position,
@@ -24,16 +25,17 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
-	pub fn load_file(&mut self, lrc_path: &str) -> eyre::Result<()> {
+	pub fn load_file(&mut self, lrc_path: &Path) -> eyre::Result<()> {
 		self.lrc_file_path = lrc_path.to_owned();
-		self.lyrics = Lyrics::from_buf(BufReader::new(File::open(lrc_path)?))?;
+		self.lyrics
+			.read_overwrite(BufReader::new(File::open(lrc_path)?))?;
 		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
 		Ok(())
 	}
 
 	pub fn write_to_file(&mut self) -> eyre::Result<()> {
-		self.lyrics.write(BufWriter::new(
+		self.lyrics.write_to(&mut BufWriter::new(
 			OpenOptions::new()
 				.read(false)
 				.write(true)

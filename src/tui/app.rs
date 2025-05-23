@@ -29,7 +29,13 @@ impl App {
 
 		while !state.should_quit {
 			tokio::select! {
-				_ = interval.tick() => { terminal.draw(|frame| self.draw(frame, state))?; },
+				_ = interval.tick() => {
+					if state.refresh_term {
+						terminal.clear()?;
+						state.refresh_term = false;
+					}
+					terminal.draw(|frame| self.draw(frame, state))?;
+				},
 				Some(Ok(mut event)) = events.next() => self.handle_event(&mut event, state),
 			}
 		}

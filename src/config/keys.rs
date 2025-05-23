@@ -58,6 +58,7 @@ pub enum Action {
 	Redo,
 	SyncTimestamp,
 	AdjustTimestamp(i32),
+	OpenInEditor,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -136,6 +137,7 @@ impl Default for KeyMap {
 			(KeyChord::from_char('D'), Action::AdjustTimestamp(-10)),
 			(KeyChord::from_char('c'), Action::AdjustTimestamp(1)),
 			(KeyChord::from_char('C'), Action::AdjustTimestamp(-1)),
+			(KeyChord::from_char('I'), Action::OpenInEditor),
 		]);
 		keymap.map[Context::ConfirmBox as usize] = HashMap::from([
 			(KeyChord::from_char('y'), Action::Yes),

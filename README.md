@@ -13,7 +13,7 @@ Initial release:
 - [x] import/export lrc sidecar files
 - [x] sync lyrics to current progress
 - [x] adjust timestamp per line
-- [ ] edit lyrics in text editor
+- [x] edit lyrics in text editor
 - [ ] browse directory
 - [ ] user config
 
@@ -37,8 +37,8 @@ Non-goals:
 Global:
 
 - [x] q: exit lrxed from anywhere
-- [ ] Enter: open/accept
-- [ ] Esc: back/cancel
+- [x] Enter: open/accept
+- [x] Esc: back/cancel
 
 Lyrics editor view:
 
@@ -81,7 +81,7 @@ Lyrics editor view:
 - [ ] p: \[p]aste timestamp
 - [ ] P: \[P]aste line
 - [ ] i: edit line in \[i]nternal editor
-- [ ] I: edit file in external editor
+- [x] I: edit file in external editor
 - [ ] o: insert new line after
 - [ ] O: insert new line before
 - [ ] a: toggle \[a]utoscroll

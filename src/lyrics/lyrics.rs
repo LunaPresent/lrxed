@@ -21,21 +21,19 @@ impl Default for Lyrics {
 }
 
 impl Lyrics {
-	pub fn from_buf(reader: impl Read + BufRead) -> eyre::Result<Self> {
-		let mut lyrics = Lyrics {
-			metadata: Default::default(),
-			lines: Default::default(),
-		};
+	pub fn read_overwrite(&mut self, reader: impl Read + BufRead) -> eyre::Result<()> {
+		self.metadata.clear();
+		self.lines.clear();
 		for line in reader.lines() {
-			lyrics.parse_append(&format!("{}\n", &line?));
+			self.parse_append(&format!("{}\n", &line?));
 		}
-		if lyrics.lines.is_empty() {
-			lyrics.lines.push(Default::default());
+		if self.lines.is_empty() {
+			self.lines.push(Default::default());
 		}
-		Ok(lyrics)
+		Ok(())
 	}
 
-	pub fn write(&self, mut writer: impl Write) -> eyre::Result<()> {
+	pub fn write_to(&self, writer: &mut impl Write) -> eyre::Result<()> {
 		for line in &self.lines {
 			if let Some(timestamp) = line.timestamp() {
 				writeln!(writer, "[{}] {}", timestamp.text(), line.text())?;

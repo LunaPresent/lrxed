@@ -10,6 +10,7 @@ pub enum EditAction {
 		idx: u16,
 		timestamp: Option<Duration>,
 	},
+	RestoreState(Vec<u8>),
 }
 
 impl EditAction {
@@ -20,6 +21,10 @@ impl EditAction {
 					return Err(eyre::eyre!("Line index out of range"));
 				}
 				lyrics.lines_mut()[*idx as usize].set_timestamp(*timestamp);
+				time_index.rebuild(lyrics.lines().iter());
+			}
+			EditAction::RestoreState(buffer) => {
+				lyrics.read_overwrite(&buffer[..])?;
 				time_index.rebuild(lyrics.lines().iter());
 			}
 		};
