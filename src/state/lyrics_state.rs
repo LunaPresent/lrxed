@@ -47,6 +47,16 @@ impl LyricsState {
 		Ok(())
 	}
 
+	pub fn undo(&mut self) -> eyre::Result<()> {
+		self.changed = true;
+		self.history.undo(&mut self.lyrics, &mut self.time_index)
+	}
+
+	pub fn redo(&mut self) -> eyre::Result<()> {
+		self.changed = true;
+		self.history.redo(&mut self.lyrics, &mut self.time_index)
+	}
+
 	pub fn set_timestamp(
 		&mut self,
 		cursor_pos: Position,

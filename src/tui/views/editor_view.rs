@@ -239,16 +239,10 @@ impl InputHandler for EditorView {
 					player.set_speed(1.);
 				}
 				Action::Undo => {
-					state
-						.lyrics
-						.history
-						.undo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
+					state.lyrics.undo()?;
 				}
 				Action::Redo => {
-					state
-						.lyrics
-						.history
-						.redo(&mut state.lyrics.lyrics, &mut state.lyrics.time_index)?;
+					state.lyrics.redo()?;
 				}
 				Action::SyncTimestamp => {
 					let player = get_player(state)?;

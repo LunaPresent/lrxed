@@ -19,6 +19,7 @@ Initial release:
 
 Future:
 
+- [ ] basic internal text editing
 - [ ] media keys / playerctl support
 - [ ] lrc tags integration
 - [ ] lrclib integration

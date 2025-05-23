@@ -65,13 +65,17 @@ impl AppState {
 		stdout().execute(EnterAlternateScreen)?;
 		self.refresh_term = true;
 
+		if buf == bytes {
+			return Ok(());
+		}
+
 		let edit = Edit::new(
 			EditAction::RestoreState(bytes),
 			EditAction::RestoreState(buf),
 		);
-
 		let result = edit.execute_forwards(&mut self.lyrics.lyrics, &mut self.lyrics.time_index);
 		self.lyrics.history.push(edit);
+		self.lyrics.changed = true;
 
 		result
 	}
