@@ -180,22 +180,14 @@ impl InputHandler for EditorView {
 							state.lyrics.time_index.find_random(time);
 					}
 				}
-				Action::SeekBackwards => {
+				Action::SeekBackwards(seconds) => {
 					let player = get_player(state)?;
 					let pos = player.position();
-					player.seek(
-						pos - min(
-							Duration::from_secs_f32(state.config.settings.jump_seconds),
-							pos,
-						),
-					)?;
+					player.seek(pos - min(Duration::from_secs_f32(seconds), pos))?;
 				}
-				Action::SeekForwards => {
+				Action::SeekForwards(seconds) => {
 					let player = get_player(state)?;
-					player.seek(
-						player.position()
-							+ Duration::from_secs_f32(state.config.settings.jump_seconds),
-					)?;
+					player.seek(player.position() + Duration::from_secs_f32(seconds))?;
 				}
 				Action::SeekToCursor => {
 					let player = get_player(state)?;
