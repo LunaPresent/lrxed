@@ -7,6 +7,7 @@ pub struct Theme {
 	pub confirm_box: Style,
 	pub cursorline: Style,
 	pub lyrics_line: Style,
+	pub partial_char_token: Style,
 }
 
 impl Default for Theme {
@@ -17,6 +18,7 @@ impl Default for Theme {
 			confirm_box: Style::new().yellow(),
 			cursorline: Style::new().on_black(),
 			lyrics_line: Style::new().add_modifier(Modifier::BOLD),
+			partial_char_token: Style::new().dark_gray(),
 		}
 	}
 }

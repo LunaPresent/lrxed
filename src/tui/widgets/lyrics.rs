@@ -8,6 +8,7 @@ use ratatui::{
 	text::Span,
 	widgets::{Block, StatefulWidget, Widget},
 };
+use unicode_width::UnicodeWidthChar;
 
 use crate::{lyrics::TimeIndexEntry, state::AppState};
 
@@ -21,7 +22,6 @@ impl StatefulWidget for LyricsWidget {
 	where
 		Self: Sized,
 	{
-		state.lyrics.screen_size.y = area.height;
 		let rows = cmp::min(
 			area.height,
 			state.lyrics.lyrics.line_count() - state.cursor.scroll().y,
@@ -60,6 +60,8 @@ impl StatefulWidget for LyricsWidget {
 		state
 			.cursor
 			.set_render_origin(text_area.positions().next().unwrap_or_default());
+		state.lyrics.screen_size.x = text_area.width;
+		state.lyrics.screen_size.y = text_area.height;
 
 		let mut current_lyric_line = TimeIndexEntry::default();
 		if let Some(player) = &state.audio.audio_player {
@@ -83,7 +85,22 @@ impl StatefulWidget for LyricsWidget {
 			if is_current_lyric {
 				Span::styled("𝅘𝅥𝅮", lyrics_style).render(mark_area, buf);
 			}
-			Span::styled(lyric_line.text(), lyrics_style).render(text_area, buf);
+			let (pos, idx) = lyric_line
+				.text()
+				.char_indices()
+				.scan(0, |pos, (idx, c)| {
+					let current_pos = *pos;
+					*pos += c.width().unwrap_or_default() as u16;
+					Some((current_pos, idx))
+				})
+				.find(|(pos, _)| *pos >= state.cursor.scroll().x)
+				.unwrap_or((state.cursor.scroll().x, lyric_line.text().len()));
+			let offset = pos - state.cursor.scroll().x;
+			let [offset_area, text_area] =
+				Layout::horizontal([Constraint::Length(offset), Constraint::Fill(1)])
+					.areas(text_area);
+			Span::styled(">>>>", state.config.theme.partial_char_token).render(offset_area, buf);
+			Span::styled(&lyric_line.text()[idx..], lyrics_style).render(text_area, buf);
 		}
 	}
 }

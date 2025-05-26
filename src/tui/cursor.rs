@@ -47,7 +47,7 @@ impl Cursor {
 		scrolloff: u16,
 	) -> &mut Self {
 		self.update_vertical_scroll(text_size.y, screen_size.y, min(scrolloff, text_size.y / 2));
-
+		self.update_horizontal_scroll(text_size.x, screen_size.x, 0);
 		self
 	}
 
@@ -61,6 +61,18 @@ impl Cursor {
 			self.scroll.y + screen_height,
 		);
 		self.scroll.y = scroll_bottom - screen_height;
+	}
+
+	fn update_horizontal_scroll(&mut self, text_width: u16, screen_width: u16, scrolloff: u16) {
+		self.scroll.x = min(
+			self.editor_pos.x - min(self.editor_pos.x, scrolloff),
+			self.scroll.x,
+		);
+		let scroll_end = max(
+			min(self.editor_pos.x + scrolloff + 1, text_width),
+			self.scroll.x + screen_width,
+		);
+		self.scroll.x = scroll_end - screen_width;
 	}
 
 	pub fn set_render_origin(&mut self, origin: Position) -> &mut Self {
