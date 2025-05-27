@@ -299,7 +299,7 @@ impl StatefulWidget for EditorView {
 		buf: &mut ratatui::prelude::Buffer,
 		state: &mut Self::State,
 	) {
-		let layout = Layout::vertical([Constraint::Min(4), Constraint::Length(4)]);
+		let layout = Layout::vertical([Constraint::Min(4), Constraint::Length(5)]);
 		let [lyrics_area, playback_area] = layout.areas(area);
 
 		LyricsWidget.render(lyrics_area, buf, state);

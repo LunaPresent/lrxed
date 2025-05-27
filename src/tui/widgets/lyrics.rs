@@ -80,10 +80,15 @@ impl StatefulWidget for LyricsWidget {
 			};
 
 			let [time_area, border_area, mark_area, text_area] = line_layout.areas(line_area);
-			Span::styled(lyric_line.timestamp_text(), lyrics_style).render(time_area, buf);
-			Span::styled(symbols::line::THICK_VERTICAL, lyrics_style).render(border_area, buf);
+			Span::styled(
+				lyric_line.timestamp_text(),
+				state.config.theme.accent.patch(lyrics_style),
+			)
+			.render(time_area, buf);
+			Span::styled(symbols::line::THICK_VERTICAL, Style::default()).render(border_area, buf);
 			if is_current_lyric {
-				Span::styled("𝅘𝅥𝅮", lyrics_style).render(mark_area, buf);
+				Span::styled("𝅘𝅥𝅮", state.config.theme.accent.patch(lyrics_style))
+					.render(mark_area, buf);
 			}
 			let (pos, idx) = lyric_line
 				.text()
@@ -99,7 +104,7 @@ impl StatefulWidget for LyricsWidget {
 			let [offset_area, text_area] =
 				Layout::horizontal([Constraint::Length(offset), Constraint::Fill(1)])
 					.areas(text_area);
-			Span::styled(">>>>", state.config.theme.partial_char_token).render(offset_area, buf);
+			Span::styled(">>>>", state.config.theme.text_secondary).render(offset_area, buf);
 			Span::styled(&lyric_line.text()[idx..], lyrics_style).render(text_area, buf);
 		}
 	}
