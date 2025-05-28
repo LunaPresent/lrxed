@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::BufReader, path::PathBuf};
 
 use color_eyre::eyre;
 use lofty::file::AudioFile;
@@ -23,11 +23,10 @@ impl Default for AudioDevice {
 }
 
 impl AudioDevice {
-	pub fn try_play(&self, audio_file_path: &str) -> eyre::Result<AudioPlayer> {
-		let path = audio_file_path.to_owned();
+	pub fn try_play(&self, audio_file_path: PathBuf) -> eyre::Result<AudioPlayer> {
 		AudioPlayer::try_new(&self.handle, move || {
-			let source = Decoder::new(BufReader::new(File::open(&path)?))?;
-			let tagged_file = lofty::read_from_path(path.clone())?;
+			let source = Decoder::new(BufReader::new(File::open(&audio_file_path)?))?;
+			let tagged_file = lofty::read_from_path(audio_file_path.clone())?;
 			Ok((source, tagged_file.properties().duration()))
 		})
 	}

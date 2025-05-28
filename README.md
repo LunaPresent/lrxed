@@ -14,13 +14,14 @@ Initial release:
 - [x] sync lyrics to current progress
 - [x] adjust timestamp per line
 - [x] edit lyrics in text editor
-- [ ] browse directory
+- [x] browse directory
 - [ ] user config
 
 Future:
 
 - [ ] basic internal text editing
 - [ ] media keys / playerctl support
+- [ ] mouse controls
 - [ ] lrc tags integration
 - [ ] lrclib integration
 - [ ] enhanced lrc support (karaoke lyrics)

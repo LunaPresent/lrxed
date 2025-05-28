@@ -1,7 +1,8 @@
-use std::path::Path;
+use std::path::PathBuf;
 
 use clap::Parser;
 use cli::Args;
+use directories::UserDirs;
 use state::AppState;
 use tui::{App, View};
 
@@ -22,12 +23,21 @@ async fn main() -> Result<()> {
 
 	let mut state: AppState;
 
-	if let Some(filename) = args.audio_file() {
+	let userdirs = UserDirs::new();
+	let path = if let Some(path) = args.path {
+		path
+	} else if let Some(path) = userdirs.as_ref().and_then(|x| x.audio_dir()) {
+		path.to_owned()
+	} else {
+		PathBuf::from("/")
+	};
+
+	if path.is_file() {
 		state = AppState::new(View::Editor);
-		state.audio.audio_player = Some(state.audio.audio_device.try_play(filename)?);
-		let lrc_path = Path::new(filename).with_extension("lrc");
+		let lrc_path = path.with_extension("lrc");
+		state.audio.audio_player = Some(state.audio.audio_device.try_play(path)?);
 		if lrc_path.exists() {
-			state.lyrics.load_file(&lrc_path)?;
+			state.lyrics.load_file(lrc_path)?;
 		}
 	} else {
 		state = AppState::new(View::FileTree);

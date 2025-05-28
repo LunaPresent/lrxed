@@ -1,7 +1,7 @@
 use std::{
 	fs::{File, OpenOptions},
 	io::{BufReader, BufWriter},
-	path::{Path, PathBuf},
+	path::PathBuf,
 	time::Duration,
 };
 
@@ -25,12 +25,12 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
-	pub fn load_file(&mut self, lrc_path: &Path) -> eyre::Result<()> {
-		self.lrc_file_path = lrc_path.to_owned();
+	pub fn load_file(&mut self, lrc_path: PathBuf) -> eyre::Result<()> {
 		self.lyrics
-			.read_overwrite(BufReader::new(File::open(lrc_path)?))?;
+			.read_overwrite(BufReader::new(File::open(&lrc_path)?))?;
 		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
+		self.lrc_file_path = lrc_path;
 		Ok(())
 	}
 
