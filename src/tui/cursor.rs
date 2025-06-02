@@ -6,7 +6,7 @@ use ratatui::layout::Position;
 pub struct Cursor {
 	target_pos: Position,
 	editor_pos: Position,
-	render_origin: Position,
+	render_origin: Option<Position>,
 	scroll: Position,
 }
 
@@ -75,7 +75,7 @@ impl Cursor {
 		self.scroll.x = scroll_end - screen_width;
 	}
 
-	pub fn set_render_origin(&mut self, origin: Position) -> &mut Self {
+	pub fn set_render_origin(&mut self, origin: Option<Position>) -> &mut Self {
 		self.render_origin = origin;
 		self
 	}
@@ -84,11 +84,13 @@ impl Cursor {
 		self.editor_pos
 	}
 
-	pub fn render_pos(&self) -> Position {
-		Position::new(
-			self.editor_pos.x + self.render_origin.x - self.scroll.x,
-			self.editor_pos.y + self.render_origin.y - self.scroll.y,
-		)
+	pub fn render_pos(&self) -> Option<Position> {
+		self.render_origin.map(|render_origin| {
+			Position::new(
+				self.editor_pos.x + render_origin.x - self.scroll.x,
+				self.editor_pos.y + render_origin.y - self.scroll.y,
+			)
+		})
 	}
 
 	pub fn scroll(&self) -> Position {

@@ -1,7 +1,15 @@
 use color_eyre::eyre;
-use ratatui::widgets::StatefulWidget;
+use ratatui::{
+	prelude::{Buffer, Rect},
+	text::Span,
+	widgets::{StatefulWidget, Widget},
+};
 
-use crate::{config::KeyChord, state::AppState, tui::input_handler::InputHandler};
+use crate::{
+	config::{Action, Context, KeyChord},
+	state::AppState,
+	tui::input_handler::InputHandler,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileTreeView;
@@ -9,20 +17,30 @@ pub struct FileTreeView;
 impl InputHandler for FileTreeView {
 	type State = AppState;
 
-	fn handle_input(self, key_chord: KeyChord, state: &mut Self::State) -> eyre::Result<bool> {
-		Ok(false)
+	fn handle_input(self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
+		if let Some(action) = state
+			.config
+			.keys
+			.get_action(key_chord, Context::Editor)
+			.or(state.config.keys.get_action(key_chord, Context::Global))
+		{
+			match action {
+				Action::Save => {
+					state.lyrics.write_to_file()?;
+				}
+				_ => return Ok(false),
+			}
+			Ok(true)
+		} else {
+			Ok(false)
+		}
 	}
 }
 
 impl StatefulWidget for FileTreeView {
 	type State = AppState;
 
-	fn render(
-		self,
-		area: ratatui::prelude::Rect,
-		buf: &mut ratatui::prelude::Buffer,
-		state: &mut Self::State,
-	) {
-		todo!()
+	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+		Span::from(state.file_browser.directory.to_str().unwrap_or_default()).render(area, buf);
 	}
 }

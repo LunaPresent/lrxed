@@ -44,7 +44,9 @@ impl App {
 
 	fn draw(self, frame: &mut Frame, state: &mut AppState) {
 		frame.render_stateful_widget(self, frame.area(), state);
-		frame.set_cursor_position(state.cursor.render_pos());
+		if let Some(cursor) = state.cursor.render_pos() {
+			frame.set_cursor_position(cursor);
+		}
 	}
 
 	fn handle_event(self, event: &mut Event, state: &mut AppState) {
