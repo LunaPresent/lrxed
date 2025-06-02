@@ -8,17 +8,15 @@ use ratatui::crossterm::{
 };
 
 use crate::{
-	lyrics::{
-		Lyrics,
-		editing::{Edit, EditAction},
-	},
+	lyrics::editing::{Edit, EditAction},
 	tui::{Cursor, Modal, View},
 };
 
-use super::{AudioState, Config, LyricsState, ModalState};
+use super::{AudioState, Config, FileBrowserState, LyricsState, ModalState};
 
 pub struct AppState {
 	pub audio: AudioState,
+	pub file_browser: FileBrowserState,
 	pub lyrics: LyricsState,
 	pub modal: ModalState,
 	pub cursor: Cursor,
@@ -33,6 +31,7 @@ impl AppState {
 	pub fn new(initial_view: View) -> Self {
 		Self {
 			audio: Default::default(),
+			file_browser: Default::default(),
 			lyrics: Default::default(),
 			modal: Default::default(),
 			cursor: Default::default(),

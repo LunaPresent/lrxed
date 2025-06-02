@@ -57,9 +57,7 @@ impl StatefulWidget for LyricsWidget {
 		}
 
 		let [_, _, _, text_area] = line_layout.areas(area);
-		state
-			.cursor
-			.set_render_origin(text_area.positions().next().unwrap_or_default());
+		state.cursor.set_render_origin(text_area.positions().next());
 		state.lyrics.screen_size.x = text_area.width;
 		state.lyrics.screen_size.y = text_area.height;
 
