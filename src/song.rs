@@ -1,5 +1,10 @@
 use std::{ffi::OsStr, path::PathBuf};
 
+use lofty::{
+	file::TaggedFileExt,
+	tag::{ItemKey, TagType},
+};
+
 #[derive(Debug)]
 pub enum LoadSongError {
 	PathWasDirectory,
@@ -8,10 +13,17 @@ pub enum LoadSongError {
 	InvalidFileType,
 }
 
-#[derive(Debug)]
+#[derive(Clone)]
+pub struct SongMeta {
+	pub title: String,
+	pub artist: String,
+}
+
+#[derive(Clone)]
 pub struct Song {
 	pub mp3_file: PathBuf,
 	pub lrc_file: Option<PathBuf>,
+	pub meta: Option<SongMeta>,
 }
 
 impl Song {
@@ -31,17 +43,39 @@ impl Song {
 		}
 	}
 
+	fn new(mp3_file: PathBuf, lrc_file: Option<PathBuf>) -> Self {
+		let mut meta = None;
+
+		if let Ok(Some(tags)) =
+			lofty::read_from_path(mp3_file.as_path()).map(|tags| tags.tag(TagType::Id3v2).cloned())
+		{
+			let title = tags.get_string(&ItemKey::TrackTitle).unwrap_or_default();
+			let artist = tags.get_string(&ItemKey::TrackArtist).unwrap_or_default();
+
+			meta = Some(SongMeta {
+				title: title.to_string(),
+				artist: artist.to_string(),
+			})
+		}
+
+		Self {
+			mp3_file,
+			lrc_file,
+			meta,
+		}
+	}
+
 	fn from_mp3(path: PathBuf) -> Song {
 		let lrc_path = path.with_extension("lrc");
 
-		Song {
-			mp3_file: path,
-			lrc_file: if lrc_path.exists() {
+		Self::new(
+			path.clone(),
+			if lrc_path.exists() {
 				Some(lrc_path)
 			} else {
 				None
 			},
-		}
+		)
 	}
 
 	fn from_lrc(path: PathBuf) -> Result<Song, LoadSongError> {
@@ -51,9 +85,6 @@ impl Song {
 			return Err(LoadSongError::NoMp3FileFound);
 		}
 
-		Ok(Song {
-			mp3_file: mp3_path,
-			lrc_file: Some(path),
-		})
+		Ok(Self::new(mp3_path, Some(path.clone())))
 	}
 }

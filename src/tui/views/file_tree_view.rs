@@ -1,13 +1,6 @@
-use std::{iter::repeat_n, path::PathBuf};
-
+use super::View;
 use color_eyre::eyre;
-use ratatui::{
-	layout::{Constraint, Layout},
-	prelude::{Buffer, Rect},
-	style::{Style, Stylize},
-	text::Span,
-	widgets::{StatefulWidget, Widget},
-};
+use std::iter::repeat_n;
 
 use crate::{
 	config::{Action, Context, KeyChord},
@@ -15,7 +8,13 @@ use crate::{
 	tui::input_handler::InputHandler,
 };
 
-use super::View;
+use ratatui::{
+	layout::{Constraint, Layout, Position},
+	prelude::{Buffer, Rect},
+	style::{Color, Style, Stylize},
+	text::Span,
+	widgets::{StatefulWidget, Widget},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileTreeView;
@@ -24,8 +23,7 @@ impl InputHandler for FileTreeView {
 	type State = AppState;
 
 	fn handle_input(self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
-		let line = state.file_browser.selected_line as usize;
-		let directory = state.file_browser.get_directory_contents();
+		let line = state.file_browser.cursor.pos().y as usize;
 
 		if let Some(action) = state
 			.config
@@ -34,9 +32,24 @@ impl InputHandler for FileTreeView {
 			.or(state.config.keys.get_action(key_chord, Context::Global))
 		{
 			match action {
-				Action::Save => state.lyrics.write_to_file()?,
-				Action::MoveCursorY(amount) => state.file_browser.selected_line += amount,
-				Action::OpenInEditor => match &directory[line] {
+				Action::MoveCursorY(amount) => {
+					let available_lines = state
+						.screen_size
+						.y
+						.min(state.file_browser.items.len() as u16);
+
+					state
+						.file_browser
+						.cursor
+						.set_y((state.file_browser.cursor.pos().y as i16 + amount).max(0) as u16)
+						.update_pos((0..available_lines).map(|_| 1))
+						.update_scroll(
+							Position::new(0, state.file_browser.items.len() as u16),
+							state.screen_size,
+							state.config.settings.scrolloff,
+						);
+				}
+				Action::OpenInEditor => match state.file_browser.items[line].clone() {
 					FileBrowserItem::Song(song) => {
 						state.audio.audio_player =
 							Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
@@ -48,12 +61,12 @@ impl InputHandler for FileTreeView {
 						state.active_view = View::Editor;
 					}
 					FileBrowserItem::Directory(directory) => {
-						state.file_browser.directory = directory.clone();
+						state.file_browser.open_directory(&directory);
 					}
 				},
 				Action::Back => {
-					if let Some(parent) = state.file_browser.directory.parent() {
-						state.file_browser.directory = PathBuf::from(parent);
+					if let Some(parent) = state.file_browser.parent() {
+						state.file_browser.open_directory(&parent);
 					}
 				}
 				_ => return Ok(false),
@@ -70,36 +83,36 @@ impl StatefulWidget for FileTreeView {
 	type State = AppState;
 
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
-		let line = state.file_browser.selected_line;
-		let items = state.file_browser.get_directory_contents();
-		let constraints = Constraint::from_lengths(repeat_n(1, items.len()));
+		state.screen_size = Position::new(area.width, area.height);
+
+		let line_count = area.height.min(state.file_browser.items.len() as u16);
+		let line = state.file_browser.cursor.pos().y as usize;
+		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
 		let layout = Layout::vertical(constraints).split(area);
 
-		for (index, item) in items.iter().enumerate() {
+		for (index, item) in state
+			.file_browser
+			.items
+			.iter()
+			.skip(state.file_browser.cursor.scroll().y as usize)
+			.take(line_count as usize)
+			.enumerate()
+		{
 			let mut style = Style::default();
 
-			if line == index as i16 {
-				style = style.bold();
+			if line == index {
+				style = style.bold().black().bg(Color::Blue);
 			}
 
 			match item {
-				FileBrowserItem::Directory(directory) => {
-					Span::styled(
-						directory.file_name().unwrap().to_str().unwrap_or_default(),
-						style.green(),
-					)
-					.render(layout[index], buf);
+				FileBrowserItem::Song(file) => {
+					let meta = file.meta.as_ref().unwrap();
+					let text = format!("  {} - {}", meta.artist, meta.title);
+					Span::styled(text, style).render(layout[index], buf);
 				}
-				FileBrowserItem::Song(song) => {
-					Span::styled(
-						song.mp3_file
-							.file_name()
-							.unwrap()
-							.to_str()
-							.unwrap_or_default(),
-						style,
-					)
-					.render(layout[index], buf);
+				FileBrowserItem::Directory(directory) => {
+					let text = format!("  {}", directory.to_str().unwrap());
+					Span::styled(text, style).render(layout[index], buf);
 				}
 			}
 		}

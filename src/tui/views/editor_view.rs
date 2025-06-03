@@ -48,7 +48,7 @@ impl InputHandler for EditorView {
 								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
-							state.lyrics.screen_size,
+							state.screen_size,
 							state.config.settings.scrolloff,
 						);
 					state.cursor.set_y(state.cursor.pos().y);
@@ -91,7 +91,7 @@ impl InputHandler for EditorView {
 								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
-							state.lyrics.screen_size,
+							state.screen_size,
 							state.config.settings.scrolloff,
 						);
 					state.cursor.set_x(state.cursor.pos().x);
@@ -106,7 +106,7 @@ impl InputHandler for EditorView {
 								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
-							state.lyrics.screen_size,
+							state.screen_size,
 							state.config.settings.scrolloff,
 						);
 				}
@@ -120,7 +120,7 @@ impl InputHandler for EditorView {
 								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
-							state.lyrics.screen_size,
+							state.screen_size,
 							state.config.settings.scrolloff,
 						);
 				}
@@ -144,7 +144,7 @@ impl InputHandler for EditorView {
 									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 									state.lyrics.lyrics.line_count(),
 								),
-								state.lyrics.screen_size,
+								state.screen_size,
 								state.config.settings.scrolloff,
 							);
 					}
@@ -168,7 +168,7 @@ impl InputHandler for EditorView {
 									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 									state.lyrics.lyrics.line_count(),
 								),
-								state.lyrics.screen_size,
+								state.screen_size,
 								state.config.settings.scrolloff,
 							);
 					}
@@ -250,7 +250,7 @@ impl InputHandler for EditorView {
 								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
 								state.lyrics.lyrics.line_count(),
 							),
-							state.lyrics.screen_size,
+							state.screen_size,
 							state.config.settings.scrolloff,
 						);
 					state.cursor.set_y(state.cursor.pos().y);
