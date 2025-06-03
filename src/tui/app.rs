@@ -2,7 +2,12 @@ use std::time::Duration;
 
 use color_eyre::{Result, eyre};
 use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers};
-use ratatui::{DefaultTerminal, Frame, buffer::Buffer, layout::Rect, widgets::StatefulWidget};
+use ratatui::{
+	DefaultTerminal, Frame,
+	buffer::Buffer,
+	layout::{Position, Rect},
+	widgets::StatefulWidget,
+};
 use tokio_stream::StreamExt;
 
 use crate::{
@@ -105,10 +110,13 @@ impl StatefulWidget for App {
 	where
 		Self: Sized,
 	{
+		state.screen_size = Position::new(area.width, area.height);
+
 		match state.active_view {
 			View::FileTree => FileTreeView.render(area, buf, state),
 			View::Editor => EditorView.render(area, buf, state),
 		};
+
 		if let Some(modal) = state.active_modal {
 			match modal {
 				Modal::ConfirmQuit => ConfirmQuitModal.render(area, buf, state),

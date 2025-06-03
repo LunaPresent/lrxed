@@ -19,7 +19,6 @@ pub struct LyricsState {
 	pub lrc_file_path: PathBuf,
 	pub time_index: TimeIndex,
 	pub time_index_hint: TimeIndexHint,
-	pub screen_size: Position,
 	pub history: History,
 	pub changed: bool,
 }

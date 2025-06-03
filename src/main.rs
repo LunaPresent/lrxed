@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
 		}
 	} else {
 		state = AppState::new(View::FileTree);
-		state.file_browser.directory = path;
+		state.file_browser.open_directory(&path);
 	}
 
 	let app_result = App.run(terminal, &mut state).await;
