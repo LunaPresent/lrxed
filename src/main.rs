@@ -12,6 +12,7 @@ mod audio;
 mod cli;
 mod config;
 mod lyrics;
+mod song;
 mod state;
 mod tui;
 
