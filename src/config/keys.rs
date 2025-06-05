@@ -29,6 +29,7 @@ pub enum Context {
 	Global,
 	Editor,
 	ConfirmBox,
+	FileBrowser,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -150,6 +151,10 @@ impl Default for KeyMap {
 			(KeyChord::from_char('n'), Action::No),
 			(KeyChord::from_char('c'), Action::Cancel),
 		]);
+		keymap.map[Context::FileBrowser as usize] = HashMap::from([(
+			KeyChord::new(KeyCode::Enter, KeyModifiers::NONE),
+			Action::OpenInEditor,
+		)]);
 		keymap
 	}
 }

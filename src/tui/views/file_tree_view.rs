@@ -19,56 +19,73 @@ use ratatui::{
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct FileTreeView;
 
+impl FileTreeView {
+	fn go_back(&self, state: &mut AppState) {
+		if let Some(parent) = state.file_browser.parent() {
+			state.file_browser.open_directory(&parent);
+		}
+	}
+
+	fn open_item(&self, state: &mut AppState, line: usize) -> eyre::Result<()> {
+		match state.file_browser.items[line].clone() {
+			FileBrowserItem::Song(song) => {
+				state.audio.audio_player =
+					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
+
+				if let Some(lyrics) = &song.lrc_file {
+					state.lyrics.load_file(lyrics.clone()).unwrap();
+				}
+
+				state.active_view = View::Editor;
+			}
+			FileBrowserItem::Directory(directory) => {
+				state.file_browser.open_directory(&directory);
+			}
+		}
+
+		Ok(())
+	}
+
+	fn go_to(&self, state: &mut AppState, target: u16) {
+		let available_lines = state
+			.screen_size
+			.y
+			.min(state.file_browser.items.len() as u16);
+
+		state
+			.file_browser
+			.cursor
+			.set_y((target as u16).max(0) as u16)
+			.update_pos((0..available_lines).map(|_| 1))
+			.update_scroll(
+				Position::new(0, state.file_browser.items.len() as u16),
+				state.screen_size,
+				state.config.settings.scrolloff,
+			);
+	}
+}
+
 impl InputHandler for FileTreeView {
 	type State = AppState;
 
 	fn handle_input(self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
-		let line = state.file_browser.cursor.pos().y as usize;
+		let line = state.file_browser.cursor.pos().y;
 
 		if let Some(action) = state
 			.config
 			.keys
-			.get_action(key_chord, Context::Editor)
+			.get_action(key_chord, Context::FileBrowser)
 			.or(state.config.keys.get_action(key_chord, Context::Global))
 		{
 			match action {
-				Action::MoveCursorY(amount) => {
-					let available_lines = state
-						.screen_size
-						.y
-						.min(state.file_browser.items.len() as u16);
+				Action::SetCursorY(position) => self.go_to(state, position),
+				Action::MoveCursorY(amount) => self.go_to(state, (line as i16 + amount) as u16),
 
-					state
-						.file_browser
-						.cursor
-						.set_y((state.file_browser.cursor.pos().y as i16 + amount).max(0) as u16)
-						.update_pos((0..available_lines).map(|_| 1))
-						.update_scroll(
-							Position::new(0, state.file_browser.items.len() as u16),
-							state.screen_size,
-							state.config.settings.scrolloff,
-						);
-				}
-				Action::OpenInEditor => match state.file_browser.items[line].clone() {
-					FileBrowserItem::Song(song) => {
-						state.audio.audio_player =
-							Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
+				Action::Back => self.go_back(state),
+				Action::OpenInEditor => self.open_item(state, line.into())?,
+				Action::MoveCursorX(amount) if amount > 0 => self.open_item(state, line.into())?,
+				Action::MoveCursorX(amount) if amount < 0 => self.go_back(state),
 
-						if let Some(lyrics) = &song.lrc_file {
-							state.lyrics.load_file(lyrics.clone()).unwrap();
-						}
-
-						state.active_view = View::Editor;
-					}
-					FileBrowserItem::Directory(directory) => {
-						state.file_browser.open_directory(&directory);
-					}
-				},
-				Action::Back => {
-					if let Some(parent) = state.file_browser.parent() {
-						state.file_browser.open_directory(&parent);
-					}
-				}
 				_ => return Ok(false),
 			}
 
