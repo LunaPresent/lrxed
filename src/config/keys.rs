@@ -41,7 +41,6 @@ pub enum Action {
 	Yes,
 	No,
 	Save,
-	Back,
 	MoveCursorY(i16),
 	MoveCursorX(i16),
 	SetCursorY(u16),
@@ -98,10 +97,6 @@ impl Default for KeyMap {
 			(KeyChord::from_char('G'), Action::SetCursorY(u16::MAX)),
 			(KeyChord::from_char('_'), Action::SetCursorX(0)),
 			(KeyChord::from_char('$'), Action::SetCursorX(u16::MAX)),
-			(
-				KeyChord::new(KeyCode::Esc, KeyModifiers::empty()),
-				Action::Back,
-			),
 		]);
 		keymap.map[Context::Editor as usize] = HashMap::from([
 			(

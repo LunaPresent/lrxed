@@ -22,7 +22,19 @@ pub struct FileTreeView;
 impl FileTreeView {
 	fn go_back(&self, state: &mut AppState) {
 		if let Some(parent) = state.file_browser.parent() {
+			let prev_directory = state.file_browser.directory.clone();
 			state.file_browser.open_directory(&parent);
+
+			let line = state
+				.file_browser
+				.items
+				.iter()
+				.enumerate()
+				.find(|(_, item)| **item == FileBrowserItem::Directory(prev_directory.clone()))
+				.map(|(index, _)| index)
+				.unwrap_or(0);
+
+			self.go_to(state, line as u16);
 		}
 	}
 
@@ -32,7 +44,7 @@ impl FileTreeView {
 				state.audio.audio_player =
 					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
 
-				if let Some(lyrics) = &song.lrc_file {
+				if let Some(lyrics) = song.lrc_file.as_ref() {
 					state.lyrics.load_file(lyrics.clone()).unwrap();
 				}
 
@@ -81,7 +93,7 @@ impl InputHandler for FileTreeView {
 				Action::SetCursorY(position) => self.go_to(state, position),
 				Action::MoveCursorY(amount) => self.go_to(state, (line as i16 + amount) as u16),
 
-				Action::Back => self.go_back(state),
+				Action::Cancel => self.go_back(state),
 				Action::OpenInEditor => self.open_item(state, line.into())?,
 				Action::MoveCursorX(amount) if amount > 0 => self.open_item(state, line.into())?,
 				Action::MoveCursorX(amount) if amount < 0 => self.go_back(state),

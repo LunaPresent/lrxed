@@ -1,7 +1,7 @@
 use crate::{song::Song, tui::Cursor};
 use std::{cmp::Ordering, collections::HashMap, ffi::OsStr, fs, path::PathBuf, rc::Rc};
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum FileBrowserItem {
 	Directory(PathBuf),
 	Song(Song),
@@ -20,7 +20,7 @@ impl From<PathBuf> for FileBrowserItem {
 #[derive(Default)]
 pub struct FileBrowserState {
 	cache: HashMap<PathBuf, Rc<Vec<FileBrowserItem>>>,
-	directory: PathBuf,
+	pub directory: PathBuf,
 	pub cursor: Cursor,
 	pub items: Rc<Vec<FileBrowserItem>>,
 }

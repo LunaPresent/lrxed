@@ -16,6 +16,7 @@ use crate::{
 	config::{Action, Context, KeyChord},
 	state::AppState,
 	tui::{
+		View,
 		input_handler::InputHandler,
 		widgets::{LyricsWidget, PlaybackWidget},
 	},
@@ -272,6 +273,11 @@ impl InputHandler for EditorView {
 				}
 				Action::OpenInEditor => {
 					state.open_in_editor()?;
+				}
+				Action::Cancel if state.file_browser.directory.exists() => {
+					state.active_view = View::FileTree;
+					state.audio = Default::default();
+					state.lyrics = Default::default();
 				}
 				_ => return Ok(false),
 			}

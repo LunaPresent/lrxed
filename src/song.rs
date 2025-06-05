@@ -13,13 +13,13 @@ pub enum LoadSongError {
 	InvalidFileType,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct SongMeta {
 	pub title: String,
 	pub artist: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Song {
 	pub mp3_file: PathBuf,
 	pub lrc_file: Option<PathBuf>,
