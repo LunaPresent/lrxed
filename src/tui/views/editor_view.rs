@@ -48,10 +48,10 @@ impl InputHandler for EditorView {
 				Action::Save => {
 					state.lyrics.write_to_file()?;
 				}
-				Action::MoveCursorY(offset) => {
+				Action::MoveCursorY { amount } => {
 					state
 						.cursor
-						.set_y(max(state.cursor.pos().y as i16 + offset, 0) as u16)
+						.set_y(max(state.cursor.pos().y as i16 + amount, 0) as u16)
 						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
@@ -63,9 +63,9 @@ impl InputHandler for EditorView {
 						);
 					state.cursor.set_y(state.cursor.pos().y);
 				}
-				Action::MoveCursorX(offset) => {
+				Action::MoveCursorX { amount } => {
 					let line = state.lyrics.lyrics.lines()[state.cursor.pos().y as usize].text();
-					let x = if offset >= 0 {
+					let x = if amount >= 0 {
 						line.chars()
 							.scan(0, |head, c| {
 								let char_pos = *head as u16;
@@ -77,7 +77,7 @@ impl InputHandler for EditorView {
 								char_pos + char_width <= state.cursor.pos().x
 							})
 							.map(|(char_pos, _)| char_pos)
-							.nth(offset as usize)
+							.nth(amount as usize)
 							.unwrap_or(u16::MAX)
 					} else {
 						line.chars()
@@ -88,7 +88,7 @@ impl InputHandler for EditorView {
 								Some(*head)
 							})
 							.skip_while(|&char_pos| char_pos > state.cursor.pos().x)
-							.nth(offset.abs() as usize)
+							.nth(amount.abs() as usize)
 							.unwrap_or_default()
 					};
 
@@ -106,7 +106,7 @@ impl InputHandler for EditorView {
 						);
 					state.cursor.set_x(state.cursor.pos().x);
 				}
-				Action::SetCursorY(y) => {
+				Action::SetCursorY { y } => {
 					state
 						.cursor
 						.set_y(y)
@@ -120,7 +120,7 @@ impl InputHandler for EditorView {
 							state.config.settings.scrolloff,
 						);
 				}
-				Action::SetCursorX(x) => {
+				Action::SetCursorX { x } => {
 					state
 						.cursor
 						.set_x(x)
@@ -183,19 +183,19 @@ impl InputHandler for EditorView {
 							);
 					}
 				}
-				Action::SeekRelative(relative_pos) => {
-					let pos = state.audio.seek_relative(relative_pos)?;
+				Action::SeekRelative { progress } => {
+					let pos = state.audio.seek_relative(progress)?;
 					if let Some(time) = pos {
 						(_, state.lyrics.time_index_hint) =
 							state.lyrics.time_index.find_random(time);
 					}
 				}
-				Action::SeekBackwards(seconds) => {
+				Action::SeekBackwards { seconds } => {
 					let player = get_player(state)?;
 					let pos = player.position();
 					player.seek(pos - min(Duration::from_secs_f32(seconds), pos))?;
 				}
-				Action::SeekForwards(seconds) => {
+				Action::SeekForwards { seconds } => {
 					let player = get_player(state)?;
 					player.seek(player.position() + Duration::from_secs_f32(seconds))?;
 				}
@@ -226,14 +226,14 @@ impl InputHandler for EditorView {
 					let player = get_player(state)?;
 					player.set_paused(!player.is_paused());
 				}
-				Action::ChangeVolume(pct) => {
+				Action::ChangeVolume { percentage } => {
 					let player = get_player(state)?;
-					let volume = (player.volume() * 100. + 0.5) as i16 + pct;
+					let volume = (player.volume() * 100. + 0.5) as i16 + percentage;
 					player.set_volume(min(max(volume, 0), 100) as f32 / 100.);
 				}
-				Action::ChangeSpeed(pct) => {
+				Action::ChangeSpeed { percentage } => {
 					let player = get_player(state)?;
-					let speed = (player.speed() * 100. + 0.5) as i16 + pct;
+					let speed = (player.speed() * 100. + 0.5) as i16 + percentage;
 					player.set_speed(min(max(speed, 50), 200) as f32 / 100.);
 				}
 				Action::ResetSpeed => {
@@ -265,7 +265,7 @@ impl InputHandler for EditorView {
 						);
 					state.cursor.set_y(state.cursor.pos().y);
 				}
-				Action::AdjustTimestamp(centis) => {
+				Action::AdjustTimestamp { centis } => {
 					let current_timestamp = state
 						.lyrics
 						.lyrics
