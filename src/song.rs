@@ -1,13 +1,13 @@
 use mime_guess::mime;
 
 use std::{
-	ffi::OsStr,
+	convert::identity,
 	path::{Path, PathBuf},
 };
 
 use lofty::{
 	file::TaggedFileExt,
-	tag::{ItemKey, TagType},
+	tag::{ItemKey, Tag, TagType},
 };
 
 #[derive(Debug)]
@@ -22,6 +22,18 @@ pub enum LoadSongError {
 pub struct SongMeta {
 	pub title: String,
 	pub artist: String,
+}
+
+impl From<Tag> for SongMeta {
+	fn from(value: Tag) -> Self {
+		let title = value.get_string(&ItemKey::TrackTitle).unwrap_or_default();
+		let artist = value.get_string(&ItemKey::TrackArtist).unwrap_or_default();
+
+		Self {
+			title: title.to_string(),
+			artist: artist.to_string(),
+		}
+	}
 }
 
 #[derive(Clone, PartialEq)]
@@ -57,19 +69,10 @@ impl Song {
 	}
 
 	fn new(mp3_file: PathBuf, lrc_file: Option<PathBuf>) -> Self {
-		let mut meta = None;
-
-		if let Ok(Some(tags)) =
-			lofty::read_from_path(mp3_file.as_path()).map(|tags| tags.tag(TagType::Id3v2).cloned())
-		{
-			let title = tags.get_string(&ItemKey::TrackTitle).unwrap_or_default();
-			let artist = tags.get_string(&ItemKey::TrackArtist).unwrap_or_default();
-
-			meta = Some(SongMeta {
-				title: title.to_string(),
-				artist: artist.to_string(),
-			})
-		}
+		let meta = lofty::read_from_path(&mp3_file)
+			.map(|tags| tags.tag(TagType::Id3v2).cloned())
+			.map_or(None, identity)
+			.map(SongMeta::from);
 
 		Self {
 			mp3_file,
