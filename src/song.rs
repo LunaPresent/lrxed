@@ -1,4 +1,9 @@
-use std::{ffi::OsStr, path::PathBuf};
+use mime_guess::mime;
+
+use std::{
+	ffi::OsStr,
+	path::{Path, PathBuf},
+};
 
 use lofty::{
 	file::TaggedFileExt,
@@ -27,28 +32,27 @@ pub struct Song {
 }
 
 impl Song {
-	pub const VALID_FILE_TYPES: &[&str] = &["mp3", "flac", "wav"];
-
-	pub fn is_valid_file_type(ext: &OsStr) -> bool {
-		match ext.to_str() {
-			Some(ref ext) => Self::VALID_FILE_TYPES.contains(ext),
-			None => false,
-		}
+	pub fn is_valid_file_type(path: &Path) -> bool {
+		mime_guess::from_path(path)
+			.first()
+			.map_or(false, |mime_type| mime_type.type_() == mime::AUDIO)
 	}
 
 	pub fn from_file(path: PathBuf) -> Result<Song, LoadSongError> {
-		if !path.is_file() {
-			return Err(LoadSongError::PathWasDirectory);
-		}
-
 		if !path.exists() {
 			return Err(LoadSongError::FileDoesNotExist);
 		}
 
-		match path.extension() {
-			Some(ext) if Self::is_valid_file_type(ext) => Ok(Self::from_mp3(path)),
-			Some(ext) if ext == OsStr::new("lrc") => Self::from_lrc(path),
-			_ => Err(LoadSongError::InvalidFileType),
+		if !path.is_file() {
+			return Err(LoadSongError::PathWasDirectory);
+		}
+
+		if Self::is_valid_file_type(&path) {
+			Ok(Self::from_mp3(path))
+		} else if path.extension().is_some_and(|it| it == "lrc") {
+			Self::from_lrc(path)
+		} else {
+			Err(LoadSongError::InvalidFileType)
 		}
 	}
 
