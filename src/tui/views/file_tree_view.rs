@@ -51,6 +51,7 @@ impl FileTreeView {
 				state.active_view = View::Editor;
 			}
 			FileBrowserItem::Directory(directory) => {
+				self.go_to(state, 0);
 				state.file_browser.open_directory(&directory);
 			}
 		}
@@ -135,13 +136,28 @@ impl StatefulWidget for FileTreeView {
 
 			match item {
 				FileBrowserItem::Song(file) => {
-					let meta = file.meta.as_ref().unwrap();
-					let text = format!("  {} - {}", meta.artist, meta.title);
-					Span::styled(text, style).render(layout[index], buf);
+					if let Some(ref meta) = file.meta {
+						let text = format!("  {} - {}", meta.artist, meta.title);
+						Span::styled(text, style).render(layout[index], buf);
+					} else {
+						let name = file
+							.mp3_file
+							.file_name()
+							.unwrap_or_default()
+							.to_str()
+							.unwrap_or_default();
+
+						Span::styled(format!("  {}", name), style).render(layout[index], buf);
+					}
 				}
 				FileBrowserItem::Directory(directory) => {
-					let text = format!("  {}", directory.to_str().unwrap());
-					Span::styled(text, style).render(layout[index], buf);
+					let name = directory
+						.file_name()
+						.unwrap_or_default()
+						.to_str()
+						.unwrap_or_default();
+
+					Span::styled(format!("  {}", name), style).render(layout[index], buf);
 				}
 			}
 		}
