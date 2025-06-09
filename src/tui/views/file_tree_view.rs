@@ -134,32 +134,12 @@ impl StatefulWidget for FileTreeView {
 				style = style.bold().black().bg(Color::Blue);
 			}
 
-			match item {
-				FileBrowserItem::Song(file) => {
-					if let Some(ref meta) = file.meta {
-						let text = format!("  {} - {}", meta.artist, meta.title);
-						Span::styled(text, style).render(layout[index], buf);
-					} else {
-						let name = file
-							.mp3_file
-							.file_name()
-							.unwrap_or_default()
-							.to_str()
-							.unwrap_or_default();
+			let icon = match item {
+				FileBrowserItem::Song(_) => " ",
+				FileBrowserItem::Directory(_) => " ",
+			};
 
-						Span::styled(format!("  {}", name), style).render(layout[index], buf);
-					}
-				}
-				FileBrowserItem::Directory(directory) => {
-					let name = directory
-						.file_name()
-						.unwrap_or_default()
-						.to_str()
-						.unwrap_or_default();
-
-					Span::styled(format!("  {}", name), style).render(layout[index], buf);
-				}
-			}
+			Span::styled(format!("{} {}", icon, item.name()), style).render(layout[index], buf);
 		}
 	}
 }
