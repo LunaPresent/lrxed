@@ -18,7 +18,7 @@ pub enum LoadSongError {
 	InvalidFileType,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SongMeta {
 	pub title: String,
 	pub artist: String,
@@ -36,7 +36,7 @@ impl From<Tag> for SongMeta {
 	}
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Song {
 	pub mp3_file: PathBuf,
 	pub lrc_file: Option<PathBuf>,

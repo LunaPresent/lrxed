@@ -5,7 +5,7 @@ use crate::{
 	tui::Cursor,
 };
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Eq)]
 pub enum FileBrowserItem {
 	Directory(PathBuf),
 	Song(Song),
@@ -49,6 +49,22 @@ impl TryFrom<PathBuf> for FileBrowserItem {
 	}
 }
 
+impl PartialOrd for FileBrowserItem {
+	fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+		Some(self.cmp(other))
+	}
+}
+
+impl Ord for FileBrowserItem {
+	fn cmp(&self, other: &Self) -> Ordering {
+		match (self, other) {
+			(FileBrowserItem::Directory(_), FileBrowserItem::Song(_)) => Ordering::Less,
+			(FileBrowserItem::Song(_), FileBrowserItem::Directory(_)) => Ordering::Greater,
+			(a, b) => a.name().cmp(&b.name()),
+		}
+	}
+}
+
 #[derive(Default)]
 pub struct FileBrowserState {
 	cache: HashMap<PathBuf, Rc<Vec<FileBrowserItem>>>,
@@ -79,11 +95,7 @@ impl FileBrowserState {
 				.filter_map(|result| result.map_or(None, |r| Some(r)))
 				.collect::<Vec<_>>();
 
-			result.sort_by(|a, b| match (a, b) {
-				(FileBrowserItem::Directory(_), FileBrowserItem::Song(_)) => Ordering::Less,
-				_ => a.name().cmp(&b.name()),
-			});
-
+			result.sort();
 			result.into()
 		})
 	}
