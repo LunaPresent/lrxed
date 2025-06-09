@@ -1,4 +1,11 @@
-use std::{borrow::Cow, cmp::Ordering, collections::HashMap, fs, path::PathBuf, rc::Rc};
+use std::{
+	borrow::Cow,
+	cmp::Ordering,
+	collections::HashMap,
+	fs,
+	path::{Path, PathBuf},
+	rc::Rc,
+};
 
 use crate::{
 	song::{LoadSongError, Song},
@@ -37,12 +44,12 @@ impl FileBrowserItem {
 	}
 }
 
-impl TryFrom<PathBuf> for FileBrowserItem {
+impl TryFrom<&Path> for FileBrowserItem {
 	type Error = LoadSongError;
 
-	fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
+	fn try_from(value: &Path) -> Result<Self, Self::Error> {
 		if value.is_dir() {
-			Ok(Self::Directory(value))
+			Ok(Self::Directory(value.to_path_buf()))
 		} else {
 			Ok(Self::Song(Song::from_file(value)?))
 		}
@@ -78,8 +85,8 @@ impl FileBrowserState {
 		self.directory.parent().map(PathBuf::from)
 	}
 
-	pub fn open_directory(&mut self, path: &PathBuf) {
-		self.directory = path.clone();
+	pub fn open_directory(&mut self, path: &Path) {
+		self.directory = path.to_path_buf();
 		self.items = Rc::clone(self.get_directory_contents());
 	}
 
@@ -91,7 +98,7 @@ impl FileBrowserState {
 
 			let mut result = directory
 				.filter_map(|item| item.map_or(None, |r| Some(r.path())))
-				.map(FileBrowserItem::try_from)
+				.map(|path| FileBrowserItem::try_from(path.as_path()))
 				.filter_map(|result| result.map_or(None, |r| Some(r)))
 				.collect::<Vec<_>>();
 

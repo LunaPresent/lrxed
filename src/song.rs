@@ -50,7 +50,7 @@ impl Song {
 			.map_or(false, |mime_type| mime_type.type_() == mime::AUDIO)
 	}
 
-	pub fn from_file(path: PathBuf) -> Result<Song, LoadSongError> {
+	pub fn from_file(path: &Path) -> Result<Song, LoadSongError> {
 		if !path.exists() {
 			return Err(LoadSongError::FileDoesNotExist);
 		}
@@ -60,9 +60,9 @@ impl Song {
 		}
 
 		if Self::is_valid_file_type(&path) {
-			Ok(Self::from_mp3(path))
+			Ok(Self::from_mp3(path.to_path_buf()))
 		} else if path.extension().is_some_and(|it| it == "lrc") {
-			Self::from_lrc(path)
+			Self::from_lrc(path.to_path_buf())
 		} else {
 			Err(LoadSongError::InvalidFileType)
 		}
