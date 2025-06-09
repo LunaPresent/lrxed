@@ -1,5 +1,9 @@
-use crate::{song::Song, tui::Cursor};
-use std::{cmp::Ordering, collections::HashMap, ffi::OsStr, fs, path::PathBuf, rc::Rc};
+use std::{borrow::Cow, cmp::Ordering, collections::HashMap, fs, path::PathBuf, rc::Rc};
+
+use crate::{
+	song::{LoadSongError, Song},
+	tui::Cursor,
+};
 
 #[derive(Clone, PartialEq)]
 pub enum FileBrowserItem {
@@ -7,12 +11,40 @@ pub enum FileBrowserItem {
 	Song(Song),
 }
 
-impl From<PathBuf> for FileBrowserItem {
-	fn from(value: PathBuf) -> Self {
+impl FileBrowserItem {
+	pub fn name(&self) -> Cow<str> {
+		match self {
+			Self::Directory(path) => Cow::Borrowed(
+				path.file_name()
+					.unwrap_or_default()
+					.to_str()
+					.unwrap_or_default(),
+			),
+			Self::Song(song) => {
+				if let Some(ref meta) = song.meta {
+					Cow::Owned(format!("{} - {}", meta.artist, meta.title))
+				} else {
+					Cow::Borrowed(
+						song.mp3_file
+							.file_name()
+							.unwrap_or_default()
+							.to_str()
+							.unwrap_or_default(),
+					)
+				}
+			}
+		}
+	}
+}
+
+impl TryFrom<PathBuf> for FileBrowserItem {
+	type Error = LoadSongError;
+
+	fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
 		if value.is_dir() {
-			Self::Directory(value)
+			Ok(Self::Directory(value))
 		} else {
-			Self::Song(Song::from_file(value).unwrap())
+			Ok(Self::Song(Song::from_file(value)?))
 		}
 	}
 }
@@ -37,27 +69,19 @@ impl FileBrowserState {
 
 	fn get_directory_contents(&mut self) -> &Rc<Vec<FileBrowserItem>> {
 		self.cache.entry(self.directory.clone()).or_insert_with(|| {
-			let directory = if let Ok(result) = fs::read_dir(&self.directory) {
-				result
-			} else {
-				return vec![].into();
+			let Ok(directory) = fs::read_dir(&self.directory) else {
+				return Default::default();
 			};
 
 			let mut result = directory
-				.filter(Result::is_ok)
-				.map(|dir_item| dir_item.unwrap().path())
-				.filter(|path| {
-					path.is_dir() || Song::is_valid_file_type(path.extension().unwrap_or_default())
-				})
-				.map(FileBrowserItem::from)
+				.filter_map(|item| item.map_or(None, |r| Some(r.path())))
+				.map(FileBrowserItem::try_from)
+				.filter_map(|result| result.map_or(None, |r| Some(r)))
 				.collect::<Vec<_>>();
 
-			result.sort_by(|f, _| {
-				if let FileBrowserItem::Directory(_) = f {
-					Ordering::Less
-				} else {
-					Ordering::Greater
-				}
+			result.sort_by(|a, b| match (a, b) {
+				(FileBrowserItem::Directory(_), FileBrowserItem::Song(_)) => Ordering::Less,
+				_ => a.name().cmp(&b.name()),
 			});
 
 			result.into()
