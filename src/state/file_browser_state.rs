@@ -46,7 +46,9 @@ impl FileBrowserState {
 			let mut result = directory
 				.filter(Result::is_ok)
 				.map(|dir_item| dir_item.unwrap().path())
-				.filter(|path| path.is_dir() || path.extension() == Some(OsStr::new("mp3")))
+				.filter(|path| {
+					path.is_dir() || Song::is_valid_file_type(path.extension().unwrap_or_default())
+				})
 				.map(FileBrowserItem::from)
 				.collect::<Vec<_>>();
 

@@ -27,6 +27,15 @@ pub struct Song {
 }
 
 impl Song {
+	pub const VALID_FILE_TYPES: &[&str] = &["mp3", "flac", "wav"];
+
+	pub fn is_valid_file_type(ext: &OsStr) -> bool {
+		match ext.to_str() {
+			Some(ref ext) => Self::VALID_FILE_TYPES.contains(ext),
+			None => false,
+		}
+	}
+
 	pub fn from_file(path: PathBuf) -> Result<Song, LoadSongError> {
 		if !path.is_file() {
 			return Err(LoadSongError::PathWasDirectory);
@@ -37,7 +46,7 @@ impl Song {
 		}
 
 		match path.extension() {
-			Some(ext) if ext == OsStr::new("mp3") => Ok(Self::from_mp3(path)),
+			Some(ext) if Self::is_valid_file_type(ext) => Ok(Self::from_mp3(path)),
 			Some(ext) if ext == OsStr::new("lrc") => Self::from_lrc(path),
 			_ => Err(LoadSongError::InvalidFileType),
 		}
