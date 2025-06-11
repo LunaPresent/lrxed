@@ -68,30 +68,24 @@ impl Song {
 		}
 	}
 
-	fn new(mp3_file: PathBuf, lrc_file: Option<PathBuf>) -> Self {
+	fn new(mp3_file: PathBuf, lrc_file: Option<&Path>) -> Self {
 		let meta = lofty::read_from_path(&mp3_file)
 			.map(|tags| tags.tag(TagType::Id3v2).cloned())
 			.map_or(None, identity)
 			.map(SongMeta::from);
 
 		Self {
-			mp3_file,
-			lrc_file,
 			meta,
+			mp3_file,
+			lrc_file: lrc_file.map(Path::to_path_buf),
 		}
 	}
 
 	fn from_mp3(path: PathBuf) -> Song {
 		let lrc_path = path.with_extension("lrc");
+		let lrc_path = lrc_path.exists().then_some(lrc_path.as_path());
 
-		Self::new(
-			path.clone(),
-			if lrc_path.exists() {
-				Some(lrc_path)
-			} else {
-				None
-			},
-		)
+		Self::new(path.clone(), lrc_path)
 	}
 
 	fn from_lrc(path: PathBuf) -> Result<Song, LoadSongError> {
@@ -101,6 +95,6 @@ impl Song {
 			return Err(LoadSongError::NoMp3FileFound);
 		}
 
-		Ok(Self::new(mp3_path, Some(path.clone())))
+		Ok(Self::new(mp3_path, Some(&path)))
 	}
 }

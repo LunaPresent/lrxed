@@ -82,30 +82,30 @@ impl InputHandler for FileTreeView {
 	type State = AppState;
 
 	fn handle_input(self, key_chord: KeyChord, state: &mut AppState) -> eyre::Result<bool> {
-		let line = state.file_browser.cursor.pos().y;
-
-		if let Some(action) = state
+		let Some(action) = state
 			.config
 			.keys
 			.get_action(key_chord, Context::FileBrowser)
 			.or(state.config.keys.get_action(key_chord, Context::Global))
-		{
-			match action {
-				Action::SetCursorY(position) => self.go_to(state, position),
-				Action::MoveCursorY(amount) => self.go_to(state, (line as i16 + amount) as u16),
+		else {
+			return Ok(false);
+		};
 
-				Action::Cancel => self.go_back(state),
-				Action::OpenInEditor => self.open_item(state, line.into())?,
-				Action::MoveCursorX(amount) if amount > 0 => self.open_item(state, line.into())?,
-				Action::MoveCursorX(amount) if amount < 0 => self.go_back(state),
+		let line = state.file_browser.cursor.pos().y;
 
-				_ => return Ok(false),
-			}
+		match action {
+			Action::SetCursorY(position) => self.go_to(state, position),
+			Action::MoveCursorY(amount) => self.go_to(state, (line as i16 + amount) as u16),
 
-			Ok(true)
-		} else {
-			Ok(false)
+			Action::Cancel => self.go_back(state),
+			Action::OpenInEditor => self.open_item(state, line.into())?,
+			Action::MoveCursorX(amount) if amount > 0 => self.open_item(state, line.into())?,
+			Action::MoveCursorX(amount) if amount < 0 => self.go_back(state),
+
+			_ => return Ok(false),
 		}
+
+		Ok(true)
 	}
 }
 
@@ -117,8 +117,14 @@ impl StatefulWidget for FileTreeView {
 
 		let line_count = area.height.min(state.file_browser.items.len() as u16);
 		let line = state.file_browser.cursor.pos().y as usize;
-		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
+		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize + 1));
 		let layout = Layout::vertical(constraints).split(area);
+
+		Span::styled(
+			state.file_browser.directory.to_str().unwrap_or_default(),
+			Style::default().green(),
+		)
+		.render(layout[0], buf);
 
 		for (index, item) in state
 			.file_browser
@@ -139,7 +145,7 @@ impl StatefulWidget for FileTreeView {
 				FileBrowserItem::Directory(_) => " ",
 			};
 
-			Span::styled(format!("{} {}", icon, item.name()), style).render(layout[index], buf);
+			Span::styled(format!("{} {}", icon, item.name()), style).render(layout[index + 1], buf);
 		}
 	}
 }
