@@ -99,7 +99,7 @@ impl FileBrowserState {
 			let mut result = directory
 				.filter_map(|item| item.map_or(None, |r| Some(r.path())))
 				.map(|path| FileBrowserItem::try_from(path.as_path()))
-				.filter_map(|result| result.map_or(None, |r| Some(r)))
+				.filter_map(|result| result.map_or(None, Some))
 				.collect::<Vec<_>>();
 
 			result.sort();
