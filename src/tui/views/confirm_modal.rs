@@ -65,10 +65,10 @@ impl<T: ConfirmModal> InputHandler for T {
 		};
 
 		match action {
-			Action::MoveCursorX(1) => {
+			Action::MoveCursorX { amount } if amount > 0 => {
 				state.modal.confirm_box_selected = state.modal.confirm_box_selected.next();
 			}
-			Action::MoveCursorX(-1) => {
+			Action::MoveCursorX { amount } if amount < 0 => {
 				state.modal.confirm_box_selected = state.modal.confirm_box_selected.prev();
 			}
 			Action::Confirm => {
