@@ -1,5 +1,3 @@
-use mime_guess::mime;
-
 use std::{
 	convert::identity,
 	path::{Path, PathBuf},
@@ -14,7 +12,6 @@ use lofty::{
 pub enum LoadSongError {
 	PathWasDirectory,
 	FileDoesNotExist,
-	NoMp3FileFound,
 	InvalidFileType,
 }
 
@@ -45,9 +42,10 @@ pub struct Song {
 
 impl Song {
 	pub fn is_valid_file_type(path: &Path) -> bool {
-		mime_guess::from_path(path)
-			.first()
-			.map_or(false, |mime_type| mime_type.type_() == mime::AUDIO)
+		matches!(
+			path.extension().unwrap_or_default().to_str(),
+			Some("mp3" | "wav" | "flac" | "ogg")
+		)
 	}
 
 	pub fn from_file(path: &Path) -> Result<Song, LoadSongError> {
@@ -61,8 +59,6 @@ impl Song {
 
 		if Self::is_valid_file_type(&path) {
 			Ok(Self::from_mp3(path.to_path_buf()))
-		} else if path.extension().is_some_and(|it| it == "lrc") {
-			Self::from_lrc(path.to_path_buf())
 		} else {
 			Err(LoadSongError::InvalidFileType)
 		}
@@ -86,15 +82,5 @@ impl Song {
 		let lrc_path = lrc_path.exists().then_some(lrc_path.as_path());
 
 		Self::new(path.clone(), lrc_path)
-	}
-
-	fn from_lrc(path: PathBuf) -> Result<Song, LoadSongError> {
-		let mp3_path = path.with_extension("mp3");
-
-		if !mp3_path.exists() {
-			return Err(LoadSongError::NoMp3FileFound);
-		}
-
-		Ok(Self::new(mp3_path, Some(&path)))
 	}
 }
