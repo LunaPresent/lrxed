@@ -16,7 +16,7 @@ use crate::{
 	config::{Action, Context, KeyChord},
 	state::AppState,
 	tui::{
-		View,
+		Modal, View,
 		input_handler::InputHandler,
 		widgets::{LyricsWidget, PlaybackWidget},
 	},
@@ -24,6 +24,15 @@ use crate::{
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EditorView;
+
+impl EditorView {
+	fn back_to_file_tree(self, state: &mut AppState) {
+		state.active_view = View::FileTree;
+		state.audio = Default::default();
+		state.lyrics = Default::default();
+		state.should_go_back = false;
+	}
+}
 
 impl InputHandler for EditorView {
 	type State = AppState;
@@ -275,9 +284,11 @@ impl InputHandler for EditorView {
 					state.open_in_editor()?;
 				}
 				Action::Cancel if state.file_browser.directory.exists() => {
-					state.active_view = View::FileTree;
-					state.audio = Default::default();
-					state.lyrics = Default::default();
+					if state.lyrics.changed {
+						state.active_modal = Some(Modal::GoBack);
+					} else {
+						self.back_to_file_tree(state);
+					}
 				}
 				_ => return Ok(false),
 			}
@@ -305,6 +316,10 @@ impl StatefulWidget for EditorView {
 		buf: &mut ratatui::prelude::Buffer,
 		state: &mut Self::State,
 	) {
+		if state.should_go_back {
+			self.back_to_file_tree(state);
+		}
+
 		let layout = Layout::vertical([Constraint::Min(4), Constraint::Length(5)]);
 		let [lyrics_area, playback_area] = layout.areas(area);
 
