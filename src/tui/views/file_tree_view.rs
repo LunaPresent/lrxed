@@ -91,7 +91,7 @@ impl InputHandler for FileTreeView {
 			return Ok(false);
 		};
 
-		let line = state.file_browser.cursor.pos().y;
+		let line = state.file_browser.cursor.scroll().y + state.file_browser.cursor.pos().y;
 
 		match action {
 			Action::Cancel => self.go_back(state),
