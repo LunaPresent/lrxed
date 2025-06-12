@@ -6,6 +6,9 @@ use ratatui::widgets::StatefulWidget;
 pub struct ConfirmQuitModal;
 
 impl ConfirmModal for ConfirmQuitModal {
+	const TITLE: &str = "Confirm Quit";
+	const PROMPT: &str = "Save changes before quitting?";
+
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
 		state.lyrics.write_to_file()?;
 		state.should_quit = true;
