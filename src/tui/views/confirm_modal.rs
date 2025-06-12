@@ -55,42 +55,46 @@ impl<T: ConfirmModal> InputHandler for T {
 		key_chord: crate::config::KeyChord,
 		state: &mut Self::State,
 	) -> eyre::Result<bool> {
-		if let Some(action) = state
+		let Some(action) = state
 			.config
 			.keys
 			.get_action(key_chord, Context::ConfirmBox)
 			.or(state.config.keys.get_action(key_chord, Context::Global))
-		{
-			match action {
-				Action::MoveCursorX(1) => {
-					state.modal.confirm_box_selected = state.modal.confirm_box_selected.next();
-				}
-				Action::MoveCursorX(-1) => {
-					state.modal.confirm_box_selected = state.modal.confirm_box_selected.prev();
-				}
-				Action::Confirm => {
-					match state.modal.confirm_box_selected {
-						ConfirmBoxAction::Yes => self.exec_yes(state),
-						ConfirmBoxAction::No => self.exec_no(state),
-						ConfirmBoxAction::Cancel => self.exec_cancel(state),
-					}?;
+		else {
+			return Ok(false);
+		};
 
-					state.active_modal = None;
-				}
-				Action::Yes => {
-					self.exec_yes(state)?;
-				}
-				Action::No => {
-					self.exec_no(state)?;
-				}
-				Action::Cancel => {
-					self.exec_cancel(state)?;
-				}
-				_ => return Ok(false),
-			};
-			Ok(true)
-		} else {
-			Ok(false)
-		}
+		match action {
+			Action::MoveCursorX(1) => {
+				state.modal.confirm_box_selected = state.modal.confirm_box_selected.next();
+			}
+			Action::MoveCursorX(-1) => {
+				state.modal.confirm_box_selected = state.modal.confirm_box_selected.prev();
+			}
+			Action::Confirm => {
+				match state.modal.confirm_box_selected {
+					ConfirmBoxAction::Yes => self.exec_yes(state),
+					ConfirmBoxAction::No => self.exec_no(state),
+					ConfirmBoxAction::Cancel => self.exec_cancel(state),
+				}?;
+
+				state.active_modal = None;
+			}
+			Action::Yes => {
+				self.exec_yes(state)?;
+				state.active_modal = None;
+			}
+			Action::No => {
+				self.exec_no(state)?;
+				state.active_modal = None;
+			}
+			Action::Cancel => {
+				self.exec_cancel(state)?;
+				state.active_modal = None;
+			}
+			_ => return Ok(false),
+		};
+
+		Ok(true)
 	}
 }
