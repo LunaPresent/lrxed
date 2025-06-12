@@ -4,7 +4,7 @@ use crossterm::event::{KeyCode, KeyModifiers};
 use serde::{Deserialize, Serialize, de::Visitor, ser::SerializeMap};
 use strum::{EnumCount, IntoEnumIterator};
 
-use super::{Action, Context, KeyChord, userconfig::KeyMapContextConfig};
+use super::{Action, Context, KeyChord, action::KeyMapContextConfig};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct KeyMap {
@@ -197,9 +197,16 @@ impl<'de> Visitor<'de> for KeyMapVisitor {
 		M: serde::de::MapAccess<'de>,
 	{
 		let mut key_map = Self::Value::default();
-		// while let Some((key, value)) = access.next_entry::<Context, _>()? {
-		// 	key_map.map[key as usize] = value;
-		// }
+		while let Some((context, config)) = access.next_entry::<Context, KeyMapContextConfig>()? {
+			let key_map_context = &mut key_map.map[context as usize];
+			for action_config in config.values() {
+				key_map_context
+					.retain(|&k, &mut a| k != action_config.key() && a != action_config.action());
+			}
+			for action_config in config.values() {
+				key_map_context.insert(action_config.key(), action_config.action());
+			}
+		}
 		Ok(key_map)
 	}
 }
