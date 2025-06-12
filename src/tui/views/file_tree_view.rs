@@ -118,6 +118,7 @@ impl StatefulWidget for FileTreeView {
 
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
 		state.screen_size = Position::new(area.width, area.height);
+		state.cursor.set_render_origin(None);
 
 		let line_count = area.height.min(state.file_browser.items.len() as u16);
 		let line = state.file_browser.cursor.pos().y as usize;
