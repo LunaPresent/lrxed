@@ -33,13 +33,37 @@ impl Default for KeyMap {
 				Action::Cancel,
 			),
 			(KeyChord::from_char('j'), Action::MoveCursorY { amount: 1 }),
+			(
+				KeyChord::new(KeyCode::Down, KeyModifiers::NONE),
+				Action::MoveCursorY { amount: 1 },
+			),
 			(KeyChord::from_char('k'), Action::MoveCursorY { amount: -1 }),
+			(
+				KeyChord::new(KeyCode::Up, KeyModifiers::NONE),
+				Action::MoveCursorY { amount: -1 },
+			),
 			(KeyChord::from_char('h'), Action::MoveCursorX { amount: -1 }),
+			(
+				KeyChord::new(KeyCode::Left, KeyModifiers::NONE),
+				Action::MoveCursorX { amount: -1 },
+			),
 			(KeyChord::from_char('l'), Action::MoveCursorX { amount: 1 }),
+			(
+				KeyChord::new(KeyCode::Right, KeyModifiers::NONE),
+				Action::MoveCursorX { amount: 1 },
+			),
 			(KeyChord::from_char('g'), Action::SetCursorY { y: 0 }),
 			(KeyChord::from_char('G'), Action::SetCursorY { y: u16::MAX }),
 			(KeyChord::from_char('_'), Action::SetCursorX { x: 0 }),
+			(
+				KeyChord::new(KeyCode::Home, KeyModifiers::NONE),
+				Action::SetCursorX { x: 0 },
+			),
 			(KeyChord::from_char('$'), Action::SetCursorX { x: u16::MAX }),
+			(
+				KeyChord::new(KeyCode::End, KeyModifiers::NONE),
+				Action::SetCursorX { x: u16::MAX },
+			),
 		]);
 		keymap.map[Context::Editor as usize] = HashMap::from([
 			(
