@@ -13,6 +13,9 @@ use crate::{
 };
 
 pub trait ConfirmModal: StatefulWidget<State = AppState> {
+	const TITLE: &str;
+	const PROMPT: &str;
+
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()>;
 	fn exec_no(self, state: &mut AppState) -> eyre::Result<()>;
 
@@ -23,9 +26,10 @@ pub trait ConfirmModal: StatefulWidget<State = AppState> {
 
 	fn render(&self, area: Rect, buf: &mut Buffer, state: &mut AppState) {
 		let confirm_box = ConfirmBox {
-			title: "Confirm Quit",
-			prompt: "Save changes before quitting?",
+			title: Self::TITLE,
+			prompt: Self::PROMPT,
 		};
+
 		let size = confirm_box.size_required();
 
 		let [area] = Layout::horizontal([Constraint::Length(size.x)])
