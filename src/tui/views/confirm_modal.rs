@@ -90,33 +90,3 @@ impl<T: ConfirmModal> InputHandler for T {
 		}
 	}
 }
-
-// impl<T: ConfirmModal> StatefulWidget for T {
-// 	type State = AppState;
-//
-// 	fn render(
-// 		self,
-// 		area: ratatui::prelude::Rect,
-// 		buf: &mut ratatui::prelude::Buffer,
-// 		state: &mut Self::State,
-// 	) {
-// 		let confirm_box = ConfirmBox {
-// 			title: "Confirm Quit",
-// 			prompt: "Save changes before quitting?",
-// 		};
-// 		let size = confirm_box.size_required();
-//
-// 		let [area] = Layout::horizontal([Constraint::Length(size.x)])
-// 			.flex(Flex::Center)
-// 			.areas(area);
-// 		let [_, area, _] = Layout::vertical([
-// 			Constraint::Fill(1),
-// 			Constraint::Length(size.y),
-// 			Constraint::Fill(2),
-// 		])
-// 		.areas(area);
-//
-// 		Clear.render(area, buf);
-// 		confirm_box.render(area, buf, state);
-// 	}
-// }
