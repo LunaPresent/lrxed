@@ -13,6 +13,7 @@ use tokio_stream::StreamExt;
 use crate::{
 	config::{Action, Context, KeyChord},
 	state::AppState,
+	tui::views::ConfirmBackModal,
 };
 
 use super::{
@@ -77,6 +78,7 @@ impl InputHandler for App {
 		let consumed = if let Some(modal) = state.active_modal {
 			match modal {
 				Modal::ConfirmQuit => ConfirmQuitModal.handle_input(key_chord, state),
+				Modal::GoBack => ConfirmBackModal.handle_input(key_chord, state),
 			}?
 		} else {
 			match state.active_view {
@@ -120,6 +122,7 @@ impl StatefulWidget for App {
 		if let Some(modal) = state.active_modal {
 			match modal {
 				Modal::ConfirmQuit => ConfirmQuitModal.render(area, buf, state),
+				Modal::GoBack => ConfirmBackModal.render(area, buf, state),
 			};
 		}
 	}

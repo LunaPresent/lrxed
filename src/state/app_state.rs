@@ -27,6 +27,7 @@ pub struct AppState {
 	pub active_view: View,
 	pub active_modal: Option<Modal>,
 	pub refresh_term: bool,
+	pub should_go_back: bool,
 	pub should_quit: bool,
 }
 
@@ -44,6 +45,7 @@ impl AppState {
 			active_modal: None,
 			refresh_term: false,
 			should_quit: false,
+			should_go_back: false,
 		}
 	}
 

@@ -3,22 +3,23 @@ use color_eyre::eyre;
 use ratatui::widgets::StatefulWidget;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ConfirmQuitModal;
+pub struct ConfirmBackModal;
 
-impl ConfirmModal for ConfirmQuitModal {
+impl ConfirmModal for ConfirmBackModal {
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
 		state.lyrics.write_to_file()?;
-		state.should_quit = true;
+		state.should_go_back = true;
+
 		Ok(())
 	}
 
 	fn exec_no(self, state: &mut AppState) -> eyre::Result<()> {
-		state.should_quit = true;
+		state.should_go_back = true;
 		Ok(())
 	}
 }
 
-impl StatefulWidget for ConfirmQuitModal {
+impl StatefulWidget for ConfirmBackModal {
 	type State = AppState;
 
 	fn render(
