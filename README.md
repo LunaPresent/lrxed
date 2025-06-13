@@ -15,7 +15,7 @@ Initial release:
 - [x] adjust timestamp per line
 - [x] edit lyrics in text editor
 - [x] browse directory
-- [ ] user config
+- [x] user config
 
 Future:
 
