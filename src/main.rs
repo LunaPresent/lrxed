@@ -1,4 +1,8 @@
-use std::{fs, path::PathBuf};
+use std::{
+	fs,
+	io::{self, Read},
+	path::{Path, PathBuf},
+};
 
 use clap::Parser;
 use cli::Args;
@@ -20,7 +24,6 @@ mod tui;
 async fn main() -> Result<()> {
 	let args = Args::parse();
 	color_eyre::install()?;
-	let terminal = ratatui::init();
 
 	let user_dirs = UserDirs::new();
 	let path = if let Some(path) = args.path {
@@ -57,12 +60,46 @@ async fn main() -> Result<()> {
 	}
 
 	if let Some(config_dir) = config_dir {
-		if let Ok(json_file) = fs::read_to_string(config_dir.join("config.json")) {
-			state.config.keys = serde_json::from_str(&json_file)?;
+		if let Some(toml_path) = first_existing_file(config_dir, &[&"config.toml"]) {
+			let toml_str = fs::read_to_string(toml_path)?;
+			state.config = toml::from_str(&toml_str)?;
+		} else if let Some(json_path) = first_existing_file(
+			config_dir,
+			&[&"config.json", &"config.jsonc", &"config.json5"],
+		) {
+			state.config = serde_json::from_reader(io::BufReader::new(fs::File::open(json_path)?))?;
+		} else if let Some(yaml_path) =
+			first_existing_file(config_dir, &[&"config.yaml", &"config.yml"])
+		{
+			state.config = serde_yml::from_reader(io::BufReader::new(fs::File::open(yaml_path)?))?;
 		}
 	}
 
+	if let Some(file_type) = args.print_config {
+		match file_type.unwrap_or_default() {
+			cli::ConfigFiletype::Toml => println!("{}", toml::to_string_pretty(&state.config)?),
+			cli::ConfigFiletype::Json => {
+				println!("{}", serde_json::to_string_pretty(&state.config)?)
+			}
+			cli::ConfigFiletype::Yaml => {
+				println!("{}", serde_yml::to_string(&state.config)?)
+			}
+		};
+		return Ok(());
+	}
+
+	let terminal = ratatui::init();
 	let app_result = App.run(terminal, &mut state).await;
 	ratatui::restore();
 	app_result
+}
+
+fn first_existing_file<P>(directory: &Path, file_names: &[&P]) -> Option<PathBuf>
+where
+	P: AsRef<Path>,
+{
+	file_names
+		.iter()
+		.map(|f| directory.join(f))
+		.find(|path| path.is_file() && path.exists())
 }
