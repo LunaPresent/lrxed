@@ -20,10 +20,10 @@ use ratatui::{
 pub struct FileTreeView;
 
 impl FileTreeView {
-	fn go_back(&self, state: &mut AppState) {
+	fn go_back(&self, state: &mut AppState) -> eyre::Result<()> {
 		if let Some(parent) = state.file_browser.parent() {
 			let prev_directory = state.file_browser.directory.clone();
-			state.file_browser.open_directory(&parent);
+			state.file_browser.open_directory(&parent)?;
 
 			let line = state
 				.file_browser
@@ -36,6 +36,8 @@ impl FileTreeView {
 
 			self.go_to(state, line as u16);
 		}
+
+		Ok(())
 	}
 
 	fn open_item(&self, state: &mut AppState, line: usize) -> eyre::Result<()> {
@@ -52,7 +54,7 @@ impl FileTreeView {
 			}
 			FileBrowserItem::Directory(directory) => {
 				self.go_to(state, 0);
-				state.file_browser.open_directory(&directory);
+				state.file_browser.open_directory(&directory)?;
 			}
 		}
 
@@ -91,10 +93,10 @@ impl InputHandler for FileTreeView {
 		let line = state.file_browser.cursor.pos().y;
 
 		match action {
-			Action::Cancel => self.go_back(state),
+			Action::Cancel => self.go_back(state)?,
 			Action::Confirm => self.open_item(state, line.into())?,
 			Action::MoveCursorX { amount } if amount > 0 => self.open_item(state, line.into())?,
-			Action::MoveCursorX { amount } if amount < 0 => self.go_back(state),
+			Action::MoveCursorX { amount } if amount < 0 => self.go_back(state)?,
 			Action::SetCursorY { y } => self.go_to(state, y),
 			Action::MoveCursorY { amount } => {
 				if !(amount.is_negative() && amount.abs() > line as i16) {

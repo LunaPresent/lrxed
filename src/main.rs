@@ -4,12 +4,16 @@ use std::{
 };
 
 use clap::Parser;
+use clap::Parser;
 use cli::Args;
-use directories::{ProjectDirs, UserDirs};
-use state::{AppState, Config};
-use tui::{App, View};
-
+use cli::Args;
 use color_eyre::Result;
+use directories::UserDirs;
+use directories::{ProjectDirs, UserDirs};
+use state::AppState;
+use state::{AppState, Config};
+use std::path::PathBuf;
+use tui::{App, View};
 
 mod audio;
 mod cli;
@@ -87,7 +91,7 @@ async fn main() -> Result<()> {
 		}
 	} else {
 		state = AppState::new(View::FileTree);
-		state.file_browser.open_directory(&path);
+		state.file_browser.open_directory(&path)?;
 	}
 
 	state.config = config;
