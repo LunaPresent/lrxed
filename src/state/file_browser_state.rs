@@ -7,6 +7,8 @@ use std::{
 	rc::Rc,
 };
 
+use color_eyre::eyre;
+
 use crate::{
 	song::{LoadSongError, Song},
 	tui::Cursor,
@@ -85,9 +87,15 @@ impl FileBrowserState {
 		self.directory.parent().map(PathBuf::from)
 	}
 
-	pub fn open_directory(&mut self, path: &Path) {
+	pub fn open_directory(&mut self, path: &Path) -> eyre::Result<()> {
+		if !path.exists() {
+			return Err(eyre::eyre!("Specified directory does not exist"));
+		}
+
 		self.directory = path.to_path_buf();
 		self.items = Rc::clone(self.get_directory_contents());
+
+		Ok(())
 	}
 
 	fn get_directory_contents(&mut self) -> &Rc<Vec<FileBrowserItem>> {
