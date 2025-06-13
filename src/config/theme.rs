@@ -43,7 +43,9 @@ impl Default for Theme {
 #[skip_serializing_none]
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 struct StyleConfig {
+	#[serde(alias = "foreground")]
 	fg: Option<ColourConfig>,
+	#[serde(alias = "background")]
 	bg: Option<ColourConfig>,
 	bold: Option<bool>,
 	italic: Option<bool>,
