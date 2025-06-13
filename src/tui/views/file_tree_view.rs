@@ -92,14 +92,10 @@ impl InputHandler for FileTreeView {
 
 		match action {
 			Action::Cancel => self.go_back(state),
+			Action::Confirm => self.open_item(state, line.into())?,
 			Action::MoveCursorX { amount } if amount > 0 => self.open_item(state, line.into())?,
 			Action::MoveCursorX { amount } if amount < 0 => self.go_back(state),
 			Action::SetCursorY { y } => self.go_to(state, y),
-
-			Action::OpenInEditor => {
-				self.open_item(state, line.into())?;
-			}
-
 			Action::MoveCursorY { amount } => {
 				if !(amount.is_negative() && amount.abs() > line as i16) {
 					self.go_to(state, (line as i16 + amount) as u16)
