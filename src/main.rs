@@ -4,15 +4,11 @@ use std::{
 };
 
 use clap::Parser;
-use clap::Parser;
-use cli::Args;
 use cli::Args;
 use color_eyre::Result;
+use directories::ProjectDirs;
 use directories::UserDirs;
-use directories::{ProjectDirs, UserDirs};
-use state::AppState;
 use state::{AppState, Config};
-use std::path::PathBuf;
 use tui::{App, View};
 
 mod audio;
@@ -68,7 +64,8 @@ async fn main() -> Result<()> {
 		};
 		return Ok(());
 	}
-	let path = if let Some(path) = args.path {
+
+	let mut path = if let Some(path) = args.path {
 		path
 	} else if let Some(path) = &config.settings.default_path {
 		path.to_owned()
@@ -77,6 +74,12 @@ async fn main() -> Result<()> {
 	} else {
 		PathBuf::from("/")
 	};
+
+	if let Ok(remaining) = path.strip_prefix("~") {
+		if let Some(home_dir) = user_dirs.as_ref().map(|dirs| dirs.home_dir()) {
+			path = home_dir.join(remaining);
+		}
+	}
 
 	let mut state: AppState;
 
