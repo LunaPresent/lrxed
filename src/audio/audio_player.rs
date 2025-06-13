@@ -145,11 +145,6 @@ impl AudioPlayer {
 		self.controls.stopped.store(true, Ordering::SeqCst);
 	}
 
-	/// Gets if a player is stopped
-	pub fn is_stopped(&self) -> bool {
-		self.controls.stopped.load(Ordering::SeqCst)
-	}
-
 	/// Returns the position of the sound that's being played.
 	///
 	/// This takes into account any speedup or delay applied.

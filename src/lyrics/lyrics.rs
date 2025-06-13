@@ -111,10 +111,6 @@ impl Lyrics {
 		self.lines.push(LyricLine::new(None, line.to_owned()));
 	}
 
-	pub fn metadata(&self) -> &[Metadata] {
-		self.metadata.as_slice()
-	}
-
 	pub fn lines(&self) -> &[LyricLine] {
 		self.lines.as_slice()
 	}
@@ -135,7 +131,7 @@ impl Lyrics {
 		self.lines.get(y as usize).and_then(|line| line.timestamp())
 	}
 
-	pub fn time_at_cursor(&self, x: u16, y: u16) -> Option<&Timestamp> {
+	pub fn time_at_cursor(&self, _x: u16, y: u16) -> Option<&Timestamp> {
 		// TODO: karaoke: use x position to get word if possible, fallback to line
 		self.lines.get(y as usize).and_then(|line| line.timestamp())
 	}
