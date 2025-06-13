@@ -128,11 +128,7 @@ impl StatefulWidget for FileTreeView {
 		let layout = Layout::vertical(constraints).split(content);
 
 		Span::styled(
-			format!(
-				"{} - {}",
-				state.file_browser.directory.to_str().unwrap_or_default(),
-				state.file_browser.cursor.pos().y
-			),
+			state.file_browser.directory.to_str().unwrap_or_default(),
 			Style::default().green(),
 		)
 		.render(top_line, buf);
