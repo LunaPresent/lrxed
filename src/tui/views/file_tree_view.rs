@@ -11,7 +11,6 @@ use crate::{
 use ratatui::{
 	layout::{Constraint, Layout, Position},
 	prelude::{Buffer, Rect},
-	style::{Color, Style, Stylize},
 	text::Span,
 	widgets::{StatefulWidget, Widget},
 };
@@ -127,7 +126,7 @@ impl StatefulWidget for FileTreeView {
 
 		Span::styled(
 			state.file_browser.directory.to_str().unwrap_or_default(),
-			Style::default().green(),
+			state.config.theme.file_browser_parent_directory,
 		)
 		.render(top_line, buf);
 
@@ -139,11 +138,19 @@ impl StatefulWidget for FileTreeView {
 			.skip(state.file_browser.cursor.scroll().y as usize)
 			.take(line_count as usize)
 		{
-			let mut style = Style::default();
-
-			if line == index {
-				style = style.bold().black().bg(Color::Blue);
-			}
+			let style = if line == index {
+				match item {
+					FileBrowserItem::Song(_) => state.config.theme.file_browser_highlight_file,
+					FileBrowserItem::Directory(_) => {
+						state.config.theme.file_browser_highlight_directory
+					}
+				}
+			} else {
+				match item {
+					FileBrowserItem::Song(_) => state.config.theme.file_browser_file,
+					FileBrowserItem::Directory(_) => state.config.theme.file_browser_directory,
+				}
+			};
 
 			let icon = match item {
 				FileBrowserItem::Song(_) => " ",

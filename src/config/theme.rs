@@ -23,6 +23,17 @@ pub struct Theme {
 	pub lyrics_line: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub text_secondary: Style,
+
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub file_browser_parent_directory: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub file_browser_directory: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub file_browser_file: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub file_browser_highlight_directory: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub file_browser_highlight_file: Style,
 }
 
 impl Default for Theme {
@@ -36,6 +47,12 @@ impl Default for Theme {
 			inactive: Style::new().black(),
 			lyrics_line: Style::new().add_modifier(Modifier::BOLD),
 			text_secondary: Style::new().dark_gray(),
+
+			file_browser_parent_directory: Style::new().green(),
+			file_browser_directory: Style::new().blue(),
+			file_browser_file: Style::new().reset(),
+			file_browser_highlight_file: Style::new().black().on_white(),
+			file_browser_highlight_directory: Style::new().black().on_blue(),
 		}
 	}
 }
