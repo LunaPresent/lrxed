@@ -8,6 +8,7 @@ pub struct Cursor {
 	editor_pos: Position,
 	render_origin: Option<Position>,
 	scroll: Position,
+	screen_size: Position,
 }
 
 impl Cursor {
@@ -40,14 +41,13 @@ impl Cursor {
 		self
 	}
 
-	pub fn update_scroll(
-		&mut self,
-		text_size: Position,
-		screen_size: Position,
-		scrolloff: u16,
-	) -> &mut Self {
-		self.update_vertical_scroll(text_size.y, screen_size.y, min(scrolloff, text_size.y / 2));
-		self.update_horizontal_scroll(text_size.x, screen_size.x, 0);
+	pub fn update_scroll(&mut self, text_size: Position, scrolloff: u16) -> &mut Self {
+		self.update_vertical_scroll(
+			text_size.y,
+			self.screen_size.y,
+			min(scrolloff, text_size.y / 2),
+		);
+		self.update_horizontal_scroll(text_size.x, self.screen_size.x, 0);
 		self
 	}
 
@@ -77,6 +77,11 @@ impl Cursor {
 
 	pub fn set_render_origin(&mut self, origin: Option<Position>) -> &mut Self {
 		self.render_origin = origin;
+		self
+	}
+
+	pub fn set_screen_size(&mut self, size: Position) -> &mut Self {
+		self.screen_size = size;
 		self
 	}
 

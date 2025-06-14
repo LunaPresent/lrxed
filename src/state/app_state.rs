@@ -3,12 +3,9 @@ use std::{ffi::OsString, io::stdout};
 
 use color_eyre::eyre;
 use edit::Builder;
-use ratatui::{
-	crossterm::{
-		ExecutableCommand,
-		terminal::{EnterAlternateScreen, LeaveAlternateScreen},
-	},
-	layout::Position,
+use ratatui::crossterm::{
+	ExecutableCommand,
+	terminal::{EnterAlternateScreen, LeaveAlternateScreen},
 };
 
 use crate::{
@@ -17,7 +14,6 @@ use crate::{
 };
 
 pub struct AppState {
-	pub screen_size: Position,
 	pub audio: AudioState,
 	pub file_browser: FileBrowserState,
 	pub lyrics: LyricsState,
@@ -34,7 +30,6 @@ pub struct AppState {
 impl AppState {
 	pub fn new(initial_view: View) -> Self {
 		Self {
-			screen_size: Default::default(),
 			audio: Default::default(),
 			file_browser: Default::default(),
 			lyrics: Default::default(),
