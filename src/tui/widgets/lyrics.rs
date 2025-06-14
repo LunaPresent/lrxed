@@ -2,7 +2,7 @@ use std::{cmp, iter};
 
 use ratatui::{
 	buffer::Buffer,
-	layout::{Constraint, Layout, Rect},
+	layout::{Constraint, Layout, Position, Rect},
 	style::Style,
 	symbols,
 	text::Span,
@@ -58,8 +58,9 @@ impl StatefulWidget for LyricsWidget {
 
 		let [_, _, _, text_area] = line_layout.areas(area);
 		state.cursor.set_render_origin(text_area.positions().next());
-		state.screen_size.x = text_area.width;
-		state.screen_size.y = text_area.height;
+		state
+			.cursor
+			.set_screen_size(Position::new(text_area.width, text_area.height));
 
 		let mut current_lyric_line = TimeIndexEntry::default();
 		if let Some(player) = &state.audio.audio_player {

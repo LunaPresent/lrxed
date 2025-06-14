@@ -70,7 +70,6 @@ impl FileTreeView {
 			.update_pos(iter::repeat_n(1, available_lines))
 			.update_scroll(
 				Position::new(0, state.file_browser.items.len() as u16),
-				state.screen_size,
 				state.config.settings.scrolloff,
 			);
 	}
@@ -118,7 +117,10 @@ impl StatefulWidget for FileTreeView {
 
 		let [top_line, content] =
 			Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).areas(area);
-		state.screen_size = Position::new(content.width, content.height);
+		state
+			.file_browser
+			.cursor
+			.set_screen_size(Position::new(content.width, content.height));
 		let line_count = content.height.min(state.file_browser.items.len() as u16);
 		let line = state.file_browser.cursor.pos().y as usize;
 		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
