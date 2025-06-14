@@ -64,6 +64,7 @@ impl Default for KeyMap {
 				KeyChord::new(KeyCode::End, KeyModifiers::NONE),
 				Action::SetCursorX { x: u16::MAX },
 			),
+			(KeyChord::from_char('?'), Action::ViewKeys),
 		]);
 		keymap.map[Context::Editor as usize] = HashMap::from([
 			(
