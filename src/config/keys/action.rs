@@ -137,6 +137,84 @@ define_actions! {
 	SyncTimestamp,
 	AdjustTimestamp { centis: i32 },
 	OpenInEditor,
+	ViewKeys,
+}
+
+impl fmt::Display for Action {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		match self {
+			Action::NoOp => f.write_str("Do nothing (override)"),
+			Action::Quit => f.write_str("Exit lrxed"),
+			Action::Confirm => f.write_str("Confirm"),
+			Action::Cancel => f.write_str("Cancel"),
+			Action::Yes => f.write_str("Yes"),
+			Action::No => f.write_str("No"),
+			Action::Save => f.write_str("Save"),
+			Action::MoveCursorY {
+				amount: amount @ 1..,
+			} => {
+				write!(f, "Move cursor down by {amount}")
+			}
+			Action::MoveCursorY {
+				amount: amount @ ..0,
+			} => {
+				write!(f, "Move cursor up by {amount}")
+			}
+			Action::MoveCursorY { amount: 0 } => f.write_str("Move cursor up/down by 0... why?"),
+			Action::MoveCursorX {
+				amount: amount @ 1..,
+			} => {
+				write!(f, "Move cursor right by {amount}")
+			}
+			Action::MoveCursorX {
+				amount: amount @ ..0,
+			} => {
+				write!(f, "Move cursor left by {amount}")
+			}
+			Action::MoveCursorX { amount: 0 } => {
+				f.write_str("Move cursor left/right by 0... seriously?")
+			}
+			Action::SetCursorY { y: 0 } => f.write_str("Move cursor to top"),
+			Action::SetCursorY { y: u16::MAX } => f.write_str("Move cursor to bottom"),
+			Action::SetCursorY { y } => write!(f, "Move cursor to line {y}"),
+			Action::SetCursorX { x: 0 } => f.write_str("Move cursor to line start"),
+			Action::SetCursorX { x: u16::MAX } => f.write_str("Move cursor to line end"),
+			Action::SetCursorX { x } => write!(f, "Move cursor to column {x}"),
+			Action::CursorToPlaying => f.write_str("Move cursor to currently playing line"),
+			Action::CursorToPlayingLine => f.write_str("Move cursor to currently playing line"),
+			Action::SeekRelative { progress } => write!(
+				f,
+				"Jump playback to {}% of the track",
+				(progress * 100.).round()
+			),
+			Action::SeekBackwards { seconds } => {
+				write!(f, "Jump playback backwards by {seconds} seconds")
+			}
+			Action::SeekForwards { seconds } => {
+				write!(f, "Jump playback forwards by {seconds} seconds")
+			}
+			Action::SeekToCursor => f.write_str("Jump playback to selected line"),
+			Action::SeekToCursorLine => f.write_str("Jump playback to selected line"),
+			Action::TogglePause => f.write_str("Toggle playback paused"),
+			Action::ChangeVolume { percentage } => write!(f, "Change volume by {percentage}%"),
+			Action::ChangeSpeed { percentage } => {
+				write!(f, "Change playback speed by {percentage}%")
+			}
+			Action::ResetSpeed => f.write_str("Reset playback speed to 100%"),
+			Action::Undo => f.write_str("Undo"),
+			Action::Redo => f.write_str("Redo"),
+			Action::SyncTimestamp => f.write_str(
+				"Syncronise timestamp to current playback position and move cursor down",
+			),
+			Action::AdjustTimestamp { centis } => write!(
+				f,
+				"Adjust selected timestamp by {} seconds",
+				(*centis as f32 / 100.)
+			),
+			Action::OpenInEditor => f.write_str("Open lyrics in external editor"),
+			Action::ViewKeys => f.write_str("Open this popup"),
+		}
+	}
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
