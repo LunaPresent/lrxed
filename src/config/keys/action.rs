@@ -138,6 +138,8 @@ define_actions! {
 	SyncTimestamp,
 	AdjustTimestamp { centis: i32 },
 	OpenInEditor,
+	LeaveDirectory,
+	OpenFileOrDirectory,
 	ViewKeys,
 }
 
@@ -213,6 +215,8 @@ impl fmt::Display for Action {
 				(*centis as f32 / 100.)
 			),
 			Action::OpenInEditor => f.write_str("Open lyrics in external editor"),
+			Action::LeaveDirectory => f.write_str("Leave directory"),
+			Action::OpenFileOrDirectory => f.write_str("Open file or directory under cursor"),
 			Action::ViewKeys => f.write_str("Open this popup"),
 		}
 	}

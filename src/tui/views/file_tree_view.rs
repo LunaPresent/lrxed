@@ -91,10 +91,8 @@ impl InputHandler for FileTreeView {
 		let line = state.file_browser.cursor.pos().y;
 
 		match action {
-			Action::Cancel => self.go_back(state)?,
-			Action::Confirm => self.open_item(state, line.into())?,
-			Action::MoveCursorX { amount } if amount > 0 => self.open_item(state, line.into())?,
-			Action::MoveCursorX { amount } if amount < 0 => self.go_back(state)?,
+			Action::LeaveDirectory => self.go_back(state)?,
+			Action::OpenFileOrDirectory => self.open_item(state, line.into())?,
 			Action::SetCursorY { y } => self.go_to(state, y),
 			Action::MoveCursorY { amount } => {
 				if !(amount.is_negative() && amount.abs() > line as i16) {
