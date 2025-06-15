@@ -89,9 +89,7 @@ async fn main() -> Result<()> {
 		let lrc_path = path.with_extension("lrc");
 		state.audio.audio_player = Some(state.audio.audio_device.try_play(path)?);
 
-		if lrc_path.exists() {
-			state.lyrics.load_file(lrc_path)?;
-		}
+		state.lyrics.load_file_if_exists(lrc_path)?;
 	} else {
 		state = AppState::new(View::FileTree);
 		state.file_browser.open_directory(&path)?;

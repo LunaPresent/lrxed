@@ -36,7 +36,7 @@ impl From<Tag> for SongMeta {
 #[derive(Clone, PartialEq, Eq)]
 pub struct Song {
 	pub mp3_file: PathBuf,
-	pub lrc_file: Option<PathBuf>,
+	pub lrc_file: PathBuf,
 	pub meta: Option<SongMeta>,
 }
 
@@ -64,7 +64,7 @@ impl Song {
 		}
 	}
 
-	fn new(mp3_file: PathBuf, lrc_file: Option<&Path>) -> Self {
+	fn new(mp3_file: PathBuf, lrc_file: PathBuf) -> Self {
 		let meta = lofty::read_from_path(&mp3_file)
 			.map(|tags| tags.tag(TagType::Id3v2).cloned())
 			.map_or(None, identity)
@@ -73,14 +73,11 @@ impl Song {
 		Self {
 			meta,
 			mp3_file,
-			lrc_file: lrc_file.map(Path::to_path_buf),
+			lrc_file,
 		}
 	}
 
 	fn from_mp3(path: PathBuf) -> Song {
-		let lrc_path = path.with_extension("lrc");
-		let lrc_path = lrc_path.exists().then_some(lrc_path.as_path());
-
-		Self::new(path.clone(), lrc_path)
+		Self::new(path.clone(), path.with_extension("lrc"))
 	}
 }

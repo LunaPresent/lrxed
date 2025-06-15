@@ -24,13 +24,19 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
-	pub fn load_file(&mut self, lrc_path: PathBuf) -> eyre::Result<()> {
-		self.lyrics
-			.read_overwrite(BufReader::new(File::open(&lrc_path)?))?;
+	pub fn load_file_if_exists(&mut self, lrc_path: PathBuf) -> eyre::Result<bool> {
+		let exists = if lrc_path.exists() {
+			self.lyrics
+				.read_overwrite(BufReader::new(File::open(&lrc_path)?))?;
+			true
+		} else {
+			self.lyrics = Lyrics::default();
+			false
+		};
 		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
 		self.lrc_file_path = lrc_path;
-		Ok(())
+		Ok(exists)
 	}
 
 	pub fn write_to_file(&mut self) -> eyre::Result<()> {
