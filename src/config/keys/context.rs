@@ -5,6 +5,7 @@ use strum::{EnumCount, EnumIter, IntoStaticStr};
 	Debug, Clone, Copy, PartialEq, EnumCount, EnumIter, IntoStaticStr, Serialize, Deserialize,
 )]
 #[serde(rename_all = "kebab-case")]
+#[strum(serialize_all = "kebab-case")]
 pub enum Context {
 	Global,
 	ConfirmBox,

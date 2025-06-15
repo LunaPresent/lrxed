@@ -14,7 +14,8 @@ macro_rules! define_actions {// {{{
 
 		#[derive(Debug, Clone, Copy, PartialEq, EnumDiscriminants, FromRepr)]
 		#[strum_discriminants(name(ActionType))]
-		#[strum_discriminants(derive(EnumCount, EnumIter, VariantNames, Serialize, Deserialize))]
+		#[strum_discriminants(derive(
+			PartialOrd, Ord, EnumCount, EnumIter, VariantNames, Serialize, Deserialize))]
 		#[strum_discriminants(strum(serialize_all = "kebab-case"))]
 		#[strum_discriminants(serde(rename_all = "kebab-case"))]
 		pub enum Action {
@@ -196,9 +197,9 @@ impl fmt::Display for Action {
 			Action::SeekToCursor => f.write_str("Jump playback to selected line"),
 			Action::SeekToCursorLine => f.write_str("Jump playback to selected line"),
 			Action::TogglePause => f.write_str("Toggle playback paused"),
-			Action::ChangeVolume { percentage } => write!(f, "Change volume by {percentage}%"),
+			Action::ChangeVolume { percentage } => write!(f, "Change volume by {percentage:+}%"),
 			Action::ChangeSpeed { percentage } => {
-				write!(f, "Change playback speed by {percentage}%")
+				write!(f, "Change playback speed by {percentage:+}%")
 			}
 			Action::ResetSpeed => f.write_str("Reset playback speed to 100%"),
 			Action::Undo => f.write_str("Undo"),
@@ -208,7 +209,7 @@ impl fmt::Display for Action {
 			),
 			Action::AdjustTimestamp { centis } => write!(
 				f,
-				"Adjust selected timestamp by {} seconds",
+				"Adjust selected timestamp by {:+} seconds",
 				(*centis as f32 / 100.)
 			),
 			Action::OpenInEditor => f.write_str("Open lyrics in external editor"),

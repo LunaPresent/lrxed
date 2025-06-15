@@ -7,13 +7,65 @@ use ratatui::{
 	layout::{Constraint, Layout},
 	widgets::{StatefulWidget, Widget},
 };
+use strum::IntoDiscriminant;
 use unicode_width::UnicodeWidthStr;
 
 use crate::config::Action;
+use crate::config::Context;
 use crate::config::KeyChord;
-use crate::{config::Context, state::AppState};
+use crate::state::AppState;
+use crate::state::ModalState;
 
 pub struct KeysWidget;
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Line<'a> {
+	Blank,
+	ContextHeader(&'a str),
+	KeyBinding(&'a str, &'a str),
+}
+
+fn get_keys_sorted(
+	modal_state: &mut ModalState,
+	keys: impl Iterator<Item = (Context, impl Iterator<Item = (KeyChord, Action)>)>,
+) -> impl Iterator<Item = (&str, impl Iterator<Item = (&str, &str)>)> {
+	if modal_state.keys_view_cache.is_none() {
+		let keys = keys
+			.map(|(context, key_bindings)| {
+				let mut kb: Vec<_> = key_bindings.collect();
+				kb.sort_unstable_by(|(_, action_lhs), (_, action_rhs)| {
+					action_lhs
+						.discriminant()
+						.cmp(&action_rhs.discriminant())
+						.then_with(|| action_lhs.to_string().cmp(&action_rhs.to_string()))
+				});
+				let context_str: &str = context.into();
+				let key_bindings_vec: Vec<(String, String)> = kb
+					.iter()
+					.map(|(key_chord, action)| (key_chord.to_string(), action.to_string()))
+					.collect();
+				(context_str.to_owned(), key_bindings_vec)
+			})
+			.filter(|(_, key_bindings)| !key_bindings.is_empty())
+			.collect();
+
+		modal_state.keys_view_cache = Some(keys);
+	}
+
+	modal_state
+		.keys_view_cache
+		.as_ref()
+		.unwrap()
+		.iter()
+		.map(|(context, key_bindings)| {
+			(
+				context.as_str(),
+				key_bindings
+					.iter()
+					.map(|(key_chord, action)| (key_chord.as_str(), action.as_str())),
+			)
+		})
+}
 
 impl StatefulWidget for KeysWidget {
 	type State = AppState;
@@ -24,11 +76,9 @@ impl StatefulWidget for KeysWidget {
 		buf: &mut ratatui::prelude::Buffer,
 		state: &mut Self::State,
 	) {
-		let line_count = state
-			.config
-			.keys
-			.iter()
-			.fold(0, |count, (_, it)| count + it.count() + 2);
+		let line_count = get_keys_sorted(&mut state.modal, state.config.keys.iter())
+			.fold(0, |count, (_, it)| count + it.count() + 2)
+			- 1;
 
 		state.modal.popup_scroll =
 			cmp::min(state.modal.popup_scroll, line_count as u16 - area.height);
@@ -39,22 +89,15 @@ impl StatefulWidget for KeysWidget {
 		)))
 		.split(area);
 
-		let key_str_max = state
-			.config
-			.keys
-			.iter()
-			.flat_map(|(_, key_bindings)| {
-				key_bindings.map(|(key_chord, _)| key_chord.to_string().width())
-			})
+		let key_str_max = get_keys_sorted(&mut state.modal, state.config.keys.iter())
+			.flat_map(|(_, key_bindings)| key_bindings.map(|(key_chord, _)| key_chord.width()))
 			.max()
 			.unwrap_or_default() as u16;
 		let key_binding_layout =
 			Layout::horizontal([Constraint::Length(key_str_max), Constraint::Fill(1)]).spacing(1);
 
-		let lines = state
-			.config
-			.keys
-			.iter()
+		let scroll = state.modal.popup_scroll;
+		let lines = get_keys_sorted(&mut state.modal, state.config.keys.iter())
 			.flat_map(|(context, key_bindings)| {
 				iter::once(Line::ContextHeader(context))
 					.chain(
@@ -62,7 +105,7 @@ impl StatefulWidget for KeysWidget {
 					)
 					.chain(iter::once(Line::Blank))
 			})
-			.skip(state.modal.popup_scroll as usize);
+			.skip(scroll as usize);
 
 		for (line, &area) in lines.zip(line_areas.iter()) {
 			match line {
@@ -87,11 +130,4 @@ impl StatefulWidget for KeysWidget {
 			}
 		}
 	}
-}
-
-#[derive(Debug, Clone, Copy, PartialEq)]
-enum Line {
-	Blank,
-	ContextHeader(Context),
-	KeyBinding(KeyChord, Action),
 }

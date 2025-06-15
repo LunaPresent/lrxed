@@ -24,8 +24,9 @@ impl ConfirmBoxAction {
 	}
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct ModalState {
 	pub confirm_box_selected: ConfirmBoxAction,
 	pub popup_scroll: u16,
+	pub keys_view_cache: Option<Vec<(String, Vec<(String, String)>)>>,
 }
