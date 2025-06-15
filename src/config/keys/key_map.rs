@@ -201,6 +201,26 @@ impl Default for KeyMap {
 			(KeyChord::from_char('n'), Action::No),
 			(KeyChord::from_char('c'), Action::Cancel),
 		]);
+		keymap.map[Context::FileBrowser as usize] = HashMap::from([
+			(
+				KeyChord::new(KeyCode::Esc, KeyModifiers::NONE),
+				Action::LeaveDirectory,
+			),
+			(KeyChord::from_char('h'), Action::LeaveDirectory),
+			(
+				KeyChord::new(KeyCode::Left, KeyModifiers::NONE),
+				Action::LeaveDirectory,
+			),
+			(
+				KeyChord::new(KeyCode::Enter, KeyModifiers::NONE),
+				Action::OpenFileOrDirectory,
+			),
+			(KeyChord::from_char('l'), Action::OpenFileOrDirectory),
+			(
+				KeyChord::new(KeyCode::Right, KeyModifiers::NONE),
+				Action::OpenFileOrDirectory,
+			),
+		]);
 		keymap
 	}
 }
