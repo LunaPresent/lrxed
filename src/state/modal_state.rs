@@ -27,4 +27,5 @@ impl ConfirmBoxAction {
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct ModalState {
 	pub confirm_box_selected: ConfirmBoxAction,
+	pub popup_scroll: u16,
 }
