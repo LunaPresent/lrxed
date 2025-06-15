@@ -34,6 +34,7 @@ impl InputHandler for KeysModal {
 					+ amount.max(-(state.modal.popup_scroll as i16)))
 					as u16;
 			}
+			Action::SetCursorY { y } => state.modal.popup_scroll = y,
 			Action::Cancel => {
 				state.active_modal = None;
 			}
