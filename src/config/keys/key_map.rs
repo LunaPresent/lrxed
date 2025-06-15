@@ -15,6 +15,21 @@ impl KeyMap {
 	pub fn get_action(&self, key_chord: KeyChord, context: Context) -> Option<Action> {
 		self.map[context as usize].get(&key_chord).map(|&k| k)
 	}
+
+	pub fn iter(
+		&self,
+	) -> impl Iterator<Item = (Context, impl Iterator<Item = (KeyChord, Action)>)> {
+		Context::iter()
+			.zip(self.map.iter())
+			.map(|(context, mappings)| {
+				(
+					context,
+					mappings
+						.iter()
+						.map(|(&key_chord, &action)| (key_chord, action)),
+				)
+			})
+	}
 }
 
 impl Default for KeyMap {

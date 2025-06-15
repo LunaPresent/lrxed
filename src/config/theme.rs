@@ -10,11 +10,13 @@ pub struct Theme {
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub accent: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub border_info: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub border_warn: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub button_active: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub button_inactive: Style,
-	#[serde_as(as = "FromInto<StyleConfig>")]
-	pub confirm_box: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub cursorline: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
@@ -23,6 +25,8 @@ pub struct Theme {
 	pub lyrics_line: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub text_secondary: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub title: Style,
 
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub file_browser_parent_directory: Style,
@@ -40,13 +44,15 @@ impl Default for Theme {
 	fn default() -> Self {
 		Self {
 			accent: Style::new().magenta(),
+			border_info: Style::new().blue(),
+			border_warn: Style::new().yellow(),
 			button_active: Style::new().blue().on_black(),
 			button_inactive: Style::new().on_black(),
-			confirm_box: Style::new().yellow(),
 			cursorline: Style::new().on_black(),
 			inactive: Style::new().black(),
-			lyrics_line: Style::new().add_modifier(Modifier::BOLD),
+			lyrics_line: Style::new().bold(),
 			text_secondary: Style::new().dark_gray(),
+			title: Style::new().magenta().bold(),
 
 			file_browser_parent_directory: Style::new().green(),
 			file_browser_directory: Style::new().blue(),

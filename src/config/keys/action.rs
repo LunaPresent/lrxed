@@ -146,7 +146,7 @@ impl fmt::Display for Action {
 			Action::NoOp => f.write_str("Do nothing (override)"),
 			Action::Quit => f.write_str("Exit lrxed"),
 			Action::Confirm => f.write_str("Confirm"),
-			Action::Cancel => f.write_str("Cancel"),
+			Action::Cancel => f.write_str("Cancel/Close"),
 			Action::Yes => f.write_str("Yes"),
 			Action::No => f.write_str("No"),
 			Action::Save => f.write_str("Save"),
@@ -158,7 +158,7 @@ impl fmt::Display for Action {
 			Action::MoveCursorY {
 				amount: amount @ ..0,
 			} => {
-				write!(f, "Move cursor up by {amount}")
+				write!(f, "Move cursor up by {}", amount.abs())
 			}
 			Action::MoveCursorY { amount: 0 } => f.write_str("Move cursor up/down by 0... why?"),
 			Action::MoveCursorX {
@@ -169,7 +169,7 @@ impl fmt::Display for Action {
 			Action::MoveCursorX {
 				amount: amount @ ..0,
 			} => {
-				write!(f, "Move cursor left by {amount}")
+				write!(f, "Move cursor left by {}", amount.abs())
 			}
 			Action::MoveCursorX { amount: 0 } => {
 				f.write_str("Move cursor left/right by 0... seriously?")
@@ -204,7 +204,7 @@ impl fmt::Display for Action {
 			Action::Undo => f.write_str("Undo"),
 			Action::Redo => f.write_str("Redo"),
 			Action::SyncTimestamp => f.write_str(
-				"Syncronise timestamp to current playback position and move cursor down",
+				"Synchronise timestamp to current playback position and move cursor down",
 			),
 			Action::AdjustTimestamp { centis } => write!(
 				f,

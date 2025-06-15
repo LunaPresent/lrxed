@@ -8,13 +8,12 @@ use tokio_stream::StreamExt;
 use crate::{
 	config::{Action, Context, KeyChord},
 	state::AppState,
-	tui::views::ConfirmBackModal,
 };
 
 use super::{
 	Modal, View,
 	input_handler::InputHandler,
-	views::{ConfirmQuitModal, EditorView, FileTreeView},
+	views::{ConfirmBackModal, ConfirmQuitModal, EditorView, FileTreeView, KeysModal},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -74,6 +73,7 @@ impl InputHandler for App {
 			match modal {
 				Modal::ConfirmQuit => ConfirmQuitModal.handle_input(key_chord, state),
 				Modal::GoBack => ConfirmBackModal.handle_input(key_chord, state),
+				Modal::Keys => KeysModal.handle_input(key_chord, state),
 			}?
 		} else {
 			match state.active_view {
@@ -90,6 +90,11 @@ impl InputHandler for App {
 					} else {
 						state.should_quit = true;
 					}
+					Ok(true)
+				}
+				Some(Action::ViewKeys) => {
+					state.active_modal = Some(Modal::Keys);
+					state.modal.popup_scroll = 0;
 					Ok(true)
 				}
 				_ => Ok(false),
@@ -116,6 +121,7 @@ impl StatefulWidget for App {
 			match modal {
 				Modal::ConfirmQuit => ConfirmQuitModal.render(area, buf, state),
 				Modal::GoBack => ConfirmBackModal.render(area, buf, state),
+				Modal::Keys => KeysModal.render(area, buf, state),
 			};
 		}
 	}

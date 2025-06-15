@@ -50,7 +50,7 @@ impl<'a> StatefulWidget for ConfirmBox<'a> {
 		let block = Block::bordered()
 			.padding(Padding::symmetric(PADDING, 0))
 			.border_type(ratatui::widgets::BorderType::Rounded)
-			.border_style(state.config.theme.confirm_box)
+			.border_style(state.config.theme.border_warn)
 			.title_alignment(Alignment::Center)
 			.title(self.title);
 		let inner = block.inner(area);
