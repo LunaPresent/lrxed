@@ -29,9 +29,10 @@ fn get_keys_sorted(
 	modal_state: &mut ModalState,
 	keys: impl Iterator<Item = (Context, impl Iterator<Item = (KeyChord, Action)>)>,
 ) -> impl Iterator<Item = (&str, impl Iterator<Item = (&str, &str)>)> {
-	if modal_state.keys_view_cache.is_none() {
-		let keys = keys
-			.map(|(context, key_bindings)| {
+	modal_state
+		.keys_view_cache
+		.get_or_insert_with(|| {
+			keys.map(|(context, key_bindings)| {
 				let mut kb: Vec<_> = key_bindings.collect();
 				kb.sort_unstable_by(|(_, action_lhs), (_, action_rhs)| {
 					action_lhs
@@ -47,15 +48,8 @@ fn get_keys_sorted(
 				(context_str.to_owned(), key_bindings_vec)
 			})
 			.filter(|(_, key_bindings)| !key_bindings.is_empty())
-			.collect();
-
-		modal_state.keys_view_cache = Some(keys);
-	}
-
-	modal_state
-		.keys_view_cache
-		.as_ref()
-		.unwrap()
+			.collect()
+		})
 		.iter()
 		.map(|(context, key_bindings)| {
 			(
