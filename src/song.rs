@@ -7,11 +7,15 @@ use lofty::{
 	file::TaggedFileExt,
 	tag::{ItemKey, Tag, TagType},
 };
+use thiserror::Error;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum LoadSongError {
+	#[error("Path is not a file")]
 	PathWasDirectory,
+	#[error("File does not exist")]
 	FileDoesNotExist,
+	#[error("Invalid file type")]
 	InvalidFileType,
 }
 
