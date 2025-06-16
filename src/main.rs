@@ -5,7 +5,7 @@ use std::{
 
 use clap::Parser;
 use cli::Args;
-use color_eyre::Result;
+use color_eyre::{Result, eyre::OptionExt};
 use directories::ProjectDirs;
 use directories::UserDirs;
 use song::Song;
@@ -36,6 +36,32 @@ async fn main() -> Result<()> {
 	} else {
 		None
 	};
+
+	if let Some(file_type) = args.print_config_path {
+		let config_dir = &config_dir.ok_or_eyre("Config directory could not be determined")?;
+		match file_type.unwrap_or_default() {
+			cli::ConfigFiletype::Toml => println!("{}/config.toml", config_dir.to_string_lossy()),
+			cli::ConfigFiletype::Json => println!(
+				"{}",
+				first_existing_file(
+					config_dir,
+					&[&"config.json", &"config.jsonc", &"config.json5"],
+				)
+				.map_or(
+					format!("{}/config.json", config_dir.to_string_lossy()),
+					|path| path.to_string_lossy().into_owned()
+				)
+			),
+			cli::ConfigFiletype::Yaml => println!(
+				"{}",
+				first_existing_file(config_dir, &[&"config.yaml", &"config.yml"],).map_or(
+					format!("{}/config.yaml", config_dir.to_string_lossy()),
+					|path| path.to_string_lossy().into_owned()
+				)
+			),
+		};
+		return Ok(());
+	}
 
 	if let Some(config_dir) = config_dir {
 		if let Some(toml_path) = first_existing_file(config_dir, &[&"config.toml"]) {

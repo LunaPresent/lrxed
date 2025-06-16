@@ -10,6 +10,8 @@ pub struct Args {
 
 	#[arg(long)]
 	pub print_config: Option<Option<ConfigFiletype>>,
+	#[arg(long)]
+	pub print_config_path: Option<Option<ConfigFiletype>>,
 }
 
 #[derive(ValueEnum, Debug, Default, Clone, Copy, PartialEq, Eq)]
