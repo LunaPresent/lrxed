@@ -45,10 +45,7 @@ impl FileTreeView {
 				state.audio.audio_player =
 					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
 
-				state
-					.lyrics
-					.load_file_if_exists(song.lrc_file.clone())
-					.unwrap();
+				state.lyrics.load_file_if_exists(song.lrc_file.clone())?;
 
 				state.active_view = View::Editor;
 			}
