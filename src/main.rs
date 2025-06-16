@@ -8,6 +8,7 @@ use cli::Args;
 use color_eyre::Result;
 use directories::ProjectDirs;
 use directories::UserDirs;
+use song::Song;
 use state::{AppState, Config};
 use tui::{App, View};
 
@@ -84,12 +85,12 @@ async fn main() -> Result<()> {
 	let mut state: AppState;
 
 	if path.is_file() {
+		let song = Song::from_file(&path)?;
 		state = AppState::new(View::Editor);
 
-		let lrc_path = path.with_extension("lrc");
-		state.audio.audio_player = Some(state.audio.audio_device.try_play(path)?);
+		state.audio.audio_player = Some(state.audio.audio_device.try_play(song.mp3_file)?);
 
-		state.lyrics.load_file_if_exists(lrc_path)?;
+		state.lyrics.load_file_if_exists(song.lrc_file)?;
 	} else {
 		state = AppState::new(View::FileTree);
 		state.file_browser.open_directory(&path)?;
