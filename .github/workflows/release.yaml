@@ -25,7 +25,6 @@ jobs:
         name: ${{ matrix.target }}
         runs-on: ${{ matrix.os }}
         strategy:
-            fail-fast: true
             matrix:
                 include:
                     - target: aarch64-unknown-linux-gnu

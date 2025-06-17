@@ -6,6 +6,7 @@ publish_allow_dirty = true
 publish_no_verify = false
 repo_url = "https://github.com/LunaPresent/lrxed"
 semver_check = false
+changelog_update = false
 
 [changelog]
 header = "# Changelog"
