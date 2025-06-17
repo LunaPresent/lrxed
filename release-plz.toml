@@ -1,0 +1,35 @@
+[workspace]
+allow_dirty = true # allow updating repositories with uncommitted changes
+dependencies_update = false # update dependencies with `cargo update`
+git_release_enable = true
+publish_allow_dirty = true
+publish_no_verify = false
+repo_url = "https://github.com/LunaPresent/lrxed"
+semver_check = false
+
+[changelog]
+header = "# Changelog"
+body = "Body"
+trim = true
+protect_breaking_commits = true
+sort_commits = "newest"
+
+commit_preprocessors = [
+  # remove issue numbers from commits
+  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "" },
+]
+
+commit_parsers = [
+    { message = "^.*: add", group = "Added" },
+    { message = "^.*: support", group = "Added" },
+    { message = "^.*: remove", group = "Removed" },
+    { message = "^.*: delete", group = "Removed" },
+    { message = "^test", group = "Fixed" },
+    { message = "^fix", group = "Fixed" },
+    { message = "^.*: fix", group = "Fixed" },
+    { message = "^.*", group = "Changed" },
+]
+
+link_parsers = [
+    { pattern = "RFC(\\d+)", text = "ietf-rfc$1", href = "https://datatracker.ietf.org/doc/html/rfc$1"}
+]
