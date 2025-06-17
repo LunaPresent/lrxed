@@ -21,6 +21,66 @@ git clone https://github.com/LunaPresent/lrxed.git
 cargo install --path ./lrxed --locked
 ```
 
+### Cargo
+
+```sh
+cargo install lrxed
+```
+
+### Nix/NixOS
+
+First add this repo as an input to your flake.
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+
+    lrxed = {
+      url = "github:LunaPresent/lrxed";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
+}
+```
+
+#### Using the packages
+
+```nix
+{ inputs, pkgs, ... }:
+{
+  environment.systemPackages = [ inputs.lrxed.packages.${pkgs.stdenv.system.hostPlatform}.default ];
+}
+```
+
+#### Using the overlays
+
+```nix
+{ inputs, ... }:
+{
+  nixpkgs.overlays = [ inputs.lrxed.overlays.default ];
+  environment.systemPackages = [ pkgs.lrxed ];
+}
+```
+
+#### Using the home-manager module
+
+```nix
+{ inputs, ... }:
+{
+  imports = [ inputs.lrxed.homeModules.default ];
+
+  programs.lrxed = {
+    enable = true;
+
+    settings.keys.global.quit = [
+      { key = "q"; }
+      { key = "z"; }
+    ];
+  };
+}
+```
+
 ## Requirements
 
 - A [nerd font](https://www.nerdfonts.com/), for displaying certain icons.
