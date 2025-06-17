@@ -1,5 +1,7 @@
 # lrxed
 
+[![Build](https://github.com/LunaPresent/lrxed/actions/workflows/build.yaml/badge.svg)](https://github.com/LunaPresent/lrxed/actions/workflows/build.yaml)
+
 **/ˈlɪrɪksd/**  
 A tui application for synchronising lyrics
 
