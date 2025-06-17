@@ -3,6 +3,8 @@
 **/ˈlɪrɪksd/**  
 A tui application for synchronising lyrics
 
+![a showcase of the application](https://raw.githubusercontent.com/LunaPresent/readme-assets/refs/heads/lrxed/assets/showcase.gif)
+
 ## Installation
 
 ### Building from source
