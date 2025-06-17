@@ -8,9 +8,14 @@ use clap::{Parser, ValueEnum};
 pub struct Args {
 	pub path: Option<PathBuf>,
 
-	#[arg(long)]
+	#[arg(long, value_name = "PATH")]
+	/// path to config file to use instead of the default location
+	pub config: Option<PathBuf>,
+	#[arg(long, value_name = "FORMAT")]
+	/// print the user config, or the defaults for unset values, then exit
 	pub print_config: Option<Option<ConfigFiletype>>,
-	#[arg(long)]
+	/// print the location of the user config, then exit
+	#[arg(long, value_name = "FORMAT")]
 	pub print_config_path: Option<Option<ConfigFiletype>>,
 }
 

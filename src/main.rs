@@ -63,19 +63,37 @@ async fn main() -> Result<()> {
 		return Ok(());
 	}
 
-	if let Some(config_dir) = config_dir {
-		if let Some(toml_path) = first_existing_file(config_dir, &[&"config.toml"]) {
-			let toml_str = fs::read_to_string(toml_path)?;
-			config = toml::from_str(&toml_str)?;
-		} else if let Some(json_path) = first_existing_file(
+	let config_path = if args.config.is_some() {
+		args.config
+	} else if let Some(config_dir) = config_dir {
+		first_existing_file(
 			config_dir,
-			&[&"config.json", &"config.jsonc", &"config.json5"],
-		) {
-			config = serde_json::from_reader(io::BufReader::new(fs::File::open(json_path)?))?;
-		} else if let Some(yaml_path) =
-			first_existing_file(config_dir, &[&"config.yaml", &"config.yml"])
-		{
-			config = serde_yml::from_reader(io::BufReader::new(fs::File::open(yaml_path)?))?;
+			&[
+				&"config.toml",
+				&"config.json",
+				&"config.jsonc",
+				&"config.json5",
+				&"config.yaml",
+				&"config.yml",
+			],
+		)
+	} else {
+		None
+	};
+
+	if let Some(config_path) = config_path {
+		match config_path.extension().and_then(|ext| ext.to_str()) {
+			Some("toml") => {
+				let toml_str = fs::read_to_string(config_path)?;
+				config = toml::from_str(&toml_str)?;
+			}
+			Some("json" | "jsonc" | "json5") => {
+				config = serde_json::from_reader(io::BufReader::new(fs::File::open(config_path)?))?;
+			}
+			Some("yaml" | "yml") => {
+				config = serde_yml::from_reader(io::BufReader::new(fs::File::open(config_path)?))?;
+			}
+			_ => (),
 		}
 	}
 
