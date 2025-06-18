@@ -40,6 +40,10 @@ impl FileTreeView {
 	}
 
 	fn open_item(&self, state: &mut AppState, line: usize) -> eyre::Result<()> {
+		eyre::ensure!(
+			line < state.file_browser.items.len(),
+			"No file or directory selected"
+		);
 		match state.file_browser.items[line].clone() {
 			FileBrowserItem::Song(song) => {
 				state.audio.audio_player =
