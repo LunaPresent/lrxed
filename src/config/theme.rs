@@ -10,6 +10,8 @@ pub struct Theme {
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub accent: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
+	pub border_err: Style,
+	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub border_info: Style,
 	#[serde_as(as = "FromInto<StyleConfig>")]
 	pub border_warn: Style,
@@ -44,6 +46,7 @@ impl Default for Theme {
 	fn default() -> Self {
 		Self {
 			accent: Style::new().magenta(),
+			border_err: Style::new().red(),
 			border_info: Style::new().blue(),
 			border_warn: Style::new().yellow(),
 			button_active: Style::new().blue().on_black(),
