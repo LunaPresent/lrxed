@@ -90,6 +90,25 @@ First add this repo as an input to your flake.
   I suggest trying [sshfs](https://github.com/libfuse/sshfs) to mount the remote media, as running
   lrxed remotely will not give you good audio playback.
 
+## Basic usage
+
+1. Place your audio and lyrics files in the same directory, with matching filenames so that the file
+   name stem is the same, but the extension for the lyrics file is replaced with .lrc, like so:
+    ```sh
+    > ls
+    jamie_paige_ft_kasane_teto-machine_love.lrc
+    jamie_paige_ft_kasane_teto-machine_love.mp3
+    ```
+2. Open the audio file in lrxed, either directly using `lrxed <path_to_file.mp3> or by navigating
+   to it with the built-in file browser and pressing enter. If a .lrc sidecar file was not found,
+   lrxed will open a new, blank file.
+3. Synchronise the lyrics by pressing \<Space> in time with the music, just before the line is sung.
+4. Navigate through the lines with \<j> and \<k> or the arrow keys. Press \<f> on an already synced
+   line to start playback from there and test the synchronisation. Use \<s>, \<d> and \<c> to
+   increment an existing timestamp, or \<S>, \<D> and \<C> to decrement it.
+5. Press \<Ctrl-w> to save the changes to the .lrc file, exit back to the file browser using \<Esc>
+   or close lrxed using \<q>.
+
 ## Features & goals
 
 - [x] play audio from .mp3, .flac, .wav and .ogg formats
