@@ -13,7 +13,9 @@ use crate::{
 use super::{
 	Modal, View,
 	input_handler::InputHandler,
-	views::{ConfirmBackModal, ConfirmQuitModal, EditorView, FileTreeView, KeysModal},
+	views::{
+		ConfirmBackModal, ConfirmQuitModal, EditorView, FileTreeView, KeysModal, ToastsOverlay,
+	},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,8 +62,9 @@ impl App {
 			}
 			_ => Ok(()),
 		};
-		// TODO: show error without crashing the whole thing
-		result.unwrap();
+		if let Err(error) = result {
+			state.toasts.push(error.to_string());
+		}
 	}
 }
 
@@ -112,6 +115,8 @@ impl StatefulWidget for App {
 	where
 		Self: Sized,
 	{
+		ToastsOverlay.render(area, buf, state);
+
 		match state.active_view {
 			View::FileTree => FileTreeView.render(area, buf, state),
 			View::Editor => EditorView.render(area, buf, state),

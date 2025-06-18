@@ -1,4 +1,4 @@
-use super::{AudioState, Config, FileBrowserState, LyricsState, ModalState};
+use super::{AudioState, Config, FileBrowserState, LyricsState, ModalState, ToastState};
 use std::{ffi::OsString, io::stdout};
 
 use color_eyre::eyre;
@@ -22,6 +22,7 @@ pub struct AppState {
 	pub config: Config,
 	pub active_view: View,
 	pub active_modal: Option<Modal>,
+	pub toasts: ToastState,
 	pub refresh_term: bool,
 	pub should_go_back: bool,
 	pub should_quit: bool,
@@ -38,6 +39,7 @@ impl AppState {
 			config: Default::default(),
 			active_view: initial_view,
 			active_modal: None,
+			toasts: Default::default(),
 			refresh_term: false,
 			should_quit: false,
 			should_go_back: false,
