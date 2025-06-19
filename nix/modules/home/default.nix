@@ -9,7 +9,7 @@ let
   inherit (pkgs.stdenv.hostPlatform) system isDarwin;
 
   cfg = config.programs.lrxed;
-  package = if cfg.package != null then [ cfg.package ] else [ self.packages.${system}.default ];
+  package = if cfg.package != null then cfg.package else self.packages.${system}.default;
 
   settingsFormat = pkgs.formats.toml { };
   settingsFile = settingsFormat.generate "lrxed-config.toml" cfg.settings;
