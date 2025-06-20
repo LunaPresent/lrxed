@@ -1,6 +1,5 @@
-use std::path::PathBuf;
-
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -8,6 +7,7 @@ use serde::{Deserialize, Serialize};
 pub struct Settings {
 	pub scrolloff: u16,
 	pub default_path: Option<PathBuf>,
+	pub replace_txt_file_on_save: bool,
 }
 
 impl Default for Settings {
@@ -15,6 +15,7 @@ impl Default for Settings {
 		Self {
 			scrolloff: 8,
 			default_path: None,
+			replace_txt_file_on_save: false,
 		}
 	}
 }

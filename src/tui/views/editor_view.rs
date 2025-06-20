@@ -46,7 +46,9 @@ impl InputHandler for EditorView {
 		{
 			match action {
 				Action::Save => {
-					state.lyrics.write_to_file()?;
+					state
+						.lyrics
+						.write_to_file(state.config.settings.replace_txt_file_on_save)?;
 				}
 				Action::MoveCursorY { amount } => {
 					state

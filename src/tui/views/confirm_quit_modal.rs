@@ -10,8 +10,12 @@ impl ConfirmModal for ConfirmQuitModal {
 	const PROMPT: &str = "Save changes before quitting?";
 
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
-		state.lyrics.write_to_file()?;
+		state
+			.lyrics
+			.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+
 		state.should_quit = true;
+
 		Ok(())
 	}
 
