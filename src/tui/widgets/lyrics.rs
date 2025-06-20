@@ -18,10 +18,7 @@ pub struct LyricsWidget;
 impl StatefulWidget for LyricsWidget {
 	type State = AppState;
 
-	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State)
-	where
-		Self: Sized,
-	{
+	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
 		let rows = cmp::min(
 			area.height,
 			state.lyrics.lyrics.line_count() - state.cursor.scroll().y,

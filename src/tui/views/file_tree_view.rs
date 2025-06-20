@@ -5,14 +5,14 @@ use std::iter::{self, repeat_n};
 use crate::{
 	config::{Action, Context, KeyChord},
 	state::{AppState, FileBrowserItem},
-	tui::input_handler::InputHandler,
+	tui::{input_handler::InputHandler, widgets::LyricsPreviewWidget},
 };
 
 use ratatui::{
 	layout::{Constraint, Layout, Position},
 	prelude::{Buffer, Rect},
-	text::Span,
-	widgets::{StatefulWidget, Widget},
+	text::{Span, Text},
+	widgets::{Block, Borders, StatefulWidget, Widget},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -49,8 +49,7 @@ impl FileTreeView {
 				state.audio.audio_player =
 					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
 
-				state.lyrics.load_file_if_exists(song.lrc_file.clone())?;
-
+				state.lyrics.load_from_song(song)?;
 				state.active_view = View::Editor;
 			}
 			FileBrowserItem::Directory(directory) => {
@@ -115,54 +114,83 @@ impl StatefulWidget for FileTreeView {
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
 		state.cursor.set_render_origin(None);
 
+		let [left, right] = Layout::horizontal(repeat_n(Constraint::Fill(1), 2)).areas(area);
+
 		let [top_line, content] =
-			Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).areas(area);
+			Layout::vertical([Constraint::Length(1), Constraint::Fill(1)]).areas(left);
+
 		state
 			.file_browser
 			.cursor
 			.set_screen_size(Position::new(content.width, content.height));
+
 		let line_count = content.height.min(state.file_browser.items.len() as u16);
 		let line = state.file_browser.cursor.pos().y as usize;
 		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
 		let layout = Layout::vertical(constraints).split(content);
 
-		Span::styled(
-			state.file_browser.directory.to_str().unwrap_or_default(),
-			state.config.theme.file_browser_parent_directory,
-		)
-		.render(top_line, buf);
-
-		for (index, item) in state
-			.file_browser
-			.items
-			.iter()
-			.enumerate()
-			.skip(state.file_browser.cursor.scroll().y as usize)
-			.take(line_count as usize)
 		{
-			let style = if line == index {
-				match item {
-					FileBrowserItem::Song(_) => state.config.theme.file_browser_highlight_file,
-					FileBrowserItem::Directory(_) => {
-						state.config.theme.file_browser_highlight_directory
+			let right_block = Block::new().borders(Borders::LEFT);
+			let right_block_inner = right_block.inner(right);
+
+			match state.file_browser.items[line] {
+				FileBrowserItem::Directory(_) => {
+					Text::from("No preview available for directories.")
+						.render(right_block_inner, buf)
+				}
+				FileBrowserItem::Song(ref song) => {
+					if let Some(ref lyrics) = song.lyrics {
+						LyricsPreviewWidget::new(lyrics, &state.config)
+							.render(right_block_inner, buf);
+					} else {
+						Text::from("No lyrics file associated with this file.")
+							.render(right_block_inner, buf)
 					}
 				}
-			} else {
-				match item {
-					FileBrowserItem::Song(_) => state.config.theme.file_browser_file,
-					FileBrowserItem::Directory(_) => state.config.theme.file_browser_directory,
-				}
-			};
+			}
 
-			let icon = match item {
-				FileBrowserItem::Song(_) => " ",
-				FileBrowserItem::Directory(_) => " ",
-			};
+			right_block.render(right, buf);
+		}
 
-			Span::styled(format!("{} {}", icon, item.name()), style).render(
-				layout[index - state.file_browser.cursor.scroll().y as usize],
-				buf,
-			);
+		{
+			Span::styled(
+				state.file_browser.directory.to_str().unwrap_or_default(),
+				state.config.theme.file_browser_parent_directory,
+			)
+			.render(top_line, buf);
+
+			for (index, item) in state
+				.file_browser
+				.items
+				.iter()
+				.enumerate()
+				.skip(state.file_browser.cursor.scroll().y as usize)
+				.take(line_count as usize)
+			{
+				let style = if line == index {
+					match item {
+						FileBrowserItem::Song(_) => state.config.theme.file_browser_highlight_file,
+						FileBrowserItem::Directory(_) => {
+							state.config.theme.file_browser_highlight_directory
+						}
+					}
+				} else {
+					match item {
+						FileBrowserItem::Song(_) => state.config.theme.file_browser_file,
+						FileBrowserItem::Directory(_) => state.config.theme.file_browser_directory,
+					}
+				};
+
+				let icon = match item {
+					FileBrowserItem::Song(_) => " ",
+					FileBrowserItem::Directory(_) => " ",
+				};
+
+				Span::styled(format!("{} {}", icon, item.name()), style).render(
+					layout[index - state.file_browser.cursor.scroll().y as usize],
+					buf,
+				);
+			}
 		}
 	}
 }
