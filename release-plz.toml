@@ -10,15 +10,14 @@ changelog_update = true
 
 [changelog]
 header = "# Changelog"
-body = "Body"
 trim = true
 protect_breaking_commits = true
 sort_commits = "newest"
 commit_parsers = [
-    { message = "^feat(\(.*\))?: add", group = "Added" },
+    { message = "^feat(\\(.*\\))?: add", group = "Added" },
 	{ message = "^feat", group = "Changed" },
-    { message = "^feat(\(.*\))?: remove", group = "Removed" },
-    { message = "^feat(\(.*\))?: delete", group = "Removed" },
+    { message = "^feat(\\(.*\\))?: remove", group = "Removed" },
+    { message = "^feat(\\(.*\\))?: delete", group = "Removed" },
     { message = "^fix", group = "Fixed" },
 	{ message = "^refactor", skip = true },
 	{ message = "^ci", skip = true },
