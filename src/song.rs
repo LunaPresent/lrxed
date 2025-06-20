@@ -1,3 +1,5 @@
+use thiserror::Error;
+
 use std::{
 	convert::identity,
 	path::{Path, PathBuf},
@@ -7,7 +9,6 @@ use lofty::{
 	file::TaggedFileExt,
 	tag::{ItemKey, Tag, TagType},
 };
-use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum LoadSongError {
@@ -62,7 +63,7 @@ impl Song {
 		}
 
 		if Self::is_valid_file_type(&path) {
-			Ok(Self::from_mp3(path.to_path_buf()))
+			Ok(Self::from_mp3(path))
 		} else {
 			Err(LoadSongError::InvalidFileType)
 		}
@@ -81,7 +82,15 @@ impl Song {
 		}
 	}
 
-	fn from_mp3(path: PathBuf) -> Song {
-		Self::new(path.clone(), path.with_extension("lrc"))
+	fn from_mp3(path: &Path) -> Song {
+		let lrc_path = if path.with_extension("lrc").exists() {
+			path.with_extension("lrc")
+		} else if path.with_extension("txt").exists() {
+			path.with_extension("txt")
+		} else {
+			path.with_extension("lrc")
+		};
+
+		Self::new(path.into(), lrc_path)
 	}
 }

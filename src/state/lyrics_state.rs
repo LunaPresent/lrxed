@@ -40,6 +40,14 @@ impl LyricsState {
 	}
 
 	pub fn write_to_file(&mut self) -> eyre::Result<()> {
+		if self
+			.lrc_file_path
+			.extension()
+			.is_some_and(|ext| ext == "txt")
+		{
+			self.lrc_file_path = self.lrc_file_path.with_extension("lrc");
+		}
+
 		self.lyrics.write_to(&mut BufWriter::new(
 			OpenOptions::new()
 				.read(false)
@@ -48,7 +56,9 @@ impl LyricsState {
 				.truncate(true)
 				.open(&self.lrc_file_path)?,
 		))?;
+
 		self.changed = false;
+
 		Ok(())
 	}
 
