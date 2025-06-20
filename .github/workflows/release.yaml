@@ -60,3 +60,4 @@ jobs:
         tar: all
         zip: windows
         token: ${{ secrets.GITHUB_TOKEN }}
+        include: README.md,LICENCE
