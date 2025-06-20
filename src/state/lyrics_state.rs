@@ -1,5 +1,5 @@
 use std::{
-	fs::{File, OpenOptions},
+	fs::{self, File, OpenOptions},
 	io::{BufReader, BufWriter},
 	path::PathBuf,
 	time::Duration,
@@ -39,13 +39,19 @@ impl LyricsState {
 		Ok(exists)
 	}
 
-	pub fn write_to_file(&mut self) -> eyre::Result<()> {
+	pub fn write_to_file(&mut self, replace_txt_file: bool) -> eyre::Result<()> {
 		if self
 			.lrc_file_path
 			.extension()
 			.is_some_and(|ext| ext == "txt")
 		{
-			self.lrc_file_path = self.lrc_file_path.with_extension("lrc");
+			let new_file_path = self.lrc_file_path.with_extension("lrc");
+
+			if replace_txt_file {
+				fs::rename(&self.lrc_file_path, &new_file_path)?;
+			}
+
+			self.lrc_file_path = new_file_path;
 		}
 
 		self.lyrics.write_to(&mut BufWriter::new(

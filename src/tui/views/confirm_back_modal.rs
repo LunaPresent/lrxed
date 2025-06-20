@@ -10,7 +10,10 @@ impl ConfirmModal for ConfirmBackModal {
 	const PROMPT: &str = "Go back to file browser without saving changes?";
 
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
-		state.lyrics.write_to_file()?;
+		state
+			.lyrics
+			.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+
 		state.should_go_back = true;
 
 		Ok(())
