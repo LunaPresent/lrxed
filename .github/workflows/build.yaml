@@ -1,25 +1,25 @@
 name: Build
 
 on:
-    push:
-        branches: ["main"]
-    pull_request:
-        branches: ["main"]
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 env:
-    CARGO_TERM_COLOR: always
+  CARGO_TERM_COLOR: always
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
-            - name: Install libalsa
-              run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libasound2-dev
-            - name: Build
-              run: cargo build --verbose
-            - name: Fmt
-              run: cargo fmt --check
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install libalsa
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libasound2-dev
+    - name: Build
+      run: cargo build --verbose
+    - name: Fmt
+      run: cargo fmt --check
