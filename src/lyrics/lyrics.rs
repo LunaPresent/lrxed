@@ -21,6 +21,16 @@ impl Default for Lyrics {
 }
 
 impl Lyrics {
+	pub fn sync_percentage(&self) -> u8 {
+		let synced_line_count = self
+			.lines()
+			.iter()
+			.filter(|line| line.timestamp().is_some())
+			.count() as f32;
+
+		((synced_line_count / self.line_count() as f32) * 100.0) as u8
+	}
+
 	pub fn read_overwrite(&mut self, reader: impl Read + BufRead) -> eyre::Result<()> {
 		self.metadata.clear();
 		self.lines.clear();

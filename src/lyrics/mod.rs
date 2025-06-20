@@ -5,7 +5,7 @@ mod metadata;
 mod time_index;
 mod timestamp;
 
+pub use lyric_line::LyricLine;
 pub use lyrics::Lyrics;
 pub use time_index::{TimeIndex, TimeIndexEntry, TimeIndexHint};
-// pub use metadata::{Metadata, TagType};
 pub use timestamp::Timestamp;

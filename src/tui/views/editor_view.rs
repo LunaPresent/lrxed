@@ -319,6 +319,7 @@ impl StatefulWidget for EditorView {
 		let [lyrics_area, playback_area] = layout.areas(area);
 
 		LyricsWidget.render(lyrics_area, buf, state);
+
 		PlaybackWidget.render(playback_area, buf, state);
 	}
 }

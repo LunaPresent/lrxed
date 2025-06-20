@@ -8,9 +8,12 @@ use std::{
 use color_eyre::eyre;
 use ratatui::layout::Position;
 
-use crate::lyrics::{
-	Lyrics, TimeIndex, TimeIndexHint,
-	editing::{Edit, EditAction, History},
+use crate::{
+	lyrics::{
+		Lyrics, TimeIndex, TimeIndexHint,
+		editing::{Edit, EditAction, History},
+	},
+	song::Song,
 };
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
@@ -24,6 +27,20 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
+	pub fn load_from_song(&mut self, song: Song) -> eyre::Result<bool> {
+		if let Some(lyrics) = song.lyrics {
+			self.lyrics = lyrics;
+		} else {
+			return self.load_file_if_exists(song.lrc_file);
+		}
+
+		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
+		self.time_index_hint = TimeIndexHint::default();
+		self.lrc_file_path = song.lrc_file;
+
+		Ok(true)
+	}
+
 	pub fn load_file_if_exists(&mut self, lrc_path: PathBuf) -> eyre::Result<bool> {
 		let exists = if lrc_path.exists() {
 			self.lyrics

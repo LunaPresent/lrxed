@@ -1,3 +1,5 @@
+use color_eyre::eyre;
+
 use std::{
 	borrow::Cow,
 	cmp::Ordering,
@@ -6,8 +8,6 @@ use std::{
 	path::{Path, PathBuf},
 	rc::Rc,
 };
-
-use color_eyre::eyre;
 
 use crate::{
 	song::{LoadSongError, Song},
@@ -29,19 +29,18 @@ impl FileBrowserItem {
 					.to_str()
 					.unwrap_or_default(),
 			),
-			Self::Song(song) => {
-				if let Some(ref meta) = song.meta {
+			Self::Song(song) => match song.meta {
+				Some(ref meta) if !meta.artist.is_empty() && !meta.title.is_empty() => {
 					Cow::Owned(format!("{} - {}", meta.artist, meta.title))
-				} else {
-					Cow::Borrowed(
-						song.mp3_file
-							.file_name()
-							.unwrap_or_default()
-							.to_str()
-							.unwrap_or_default(),
-					)
 				}
-			}
+				_ => Cow::Borrowed(
+					song.mp3_file
+						.file_name()
+						.unwrap_or_default()
+						.to_str()
+						.unwrap_or_default(),
+				),
+			},
 		}
 	}
 }
