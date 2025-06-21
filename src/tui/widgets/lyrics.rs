@@ -21,17 +21,18 @@ impl StatefulWidget for LyricsWidget {
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
 		let rows = cmp::min(
 			area.height,
-			state.lyrics.lyrics.line_count() - state.cursor.scroll().y,
+			state.lyrics.lyrics.borrow().line_count() - state.cursor.scroll().y,
 		) as usize;
+
 		let layout = Layout::vertical(
 			iter::repeat_n(Constraint::Length(1), rows).chain(iter::once(Constraint::Fill(1))),
 		);
 
 		let areas = layout.split(area);
 		let (_fill, line_areas) = areas.split_last().unwrap();
-		let lyrics_lines = state
-			.lyrics
-			.lyrics
+		let borrowed = state.lyrics.lyrics.borrow();
+
+		let lyrics_lines = borrowed
 			.lines()
 			.iter()
 			.enumerate()

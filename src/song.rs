@@ -2,10 +2,12 @@ use crate::lyrics::Lyrics;
 use thiserror::Error;
 
 use std::{
+	cell::RefCell,
 	convert::identity,
 	fs::File,
 	io::BufReader,
 	path::{Path, PathBuf},
+	rc::Rc,
 };
 
 use lofty::{
@@ -48,7 +50,7 @@ pub struct Song {
 	pub mp3_file: PathBuf,
 	pub meta: Option<SongMeta>,
 	pub lrc_file: PathBuf,
-	pub lyrics: Option<Lyrics>,
+	pub lyrics: Option<Rc<RefCell<Lyrics>>>,
 }
 
 impl Song {
@@ -98,7 +100,7 @@ impl Song {
 			meta,
 			mp3_file,
 			lrc_file,
-			lyrics,
+			lyrics: lyrics.map(|lyrics| Rc::new(RefCell::new(lyrics))),
 		})
 	}
 

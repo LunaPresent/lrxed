@@ -1,7 +1,9 @@
 use std::{
+	cell::RefCell,
 	fs::{self, File, OpenOptions},
 	io::{BufReader, BufWriter},
 	path::PathBuf,
+	rc::Rc,
 	time::Duration,
 };
 
@@ -18,7 +20,7 @@ use crate::{
 
 #[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub struct LyricsState {
-	pub lyrics: Lyrics,
+	pub lyrics: Rc<RefCell<Lyrics>>,
 	pub lrc_file_path: PathBuf,
 	pub time_index: TimeIndex,
 	pub time_index_hint: TimeIndexHint,
@@ -27,16 +29,16 @@ pub struct LyricsState {
 }
 
 impl LyricsState {
-	pub fn load_from_song(&mut self, song: Song) -> eyre::Result<bool> {
-		if let Some(lyrics) = song.lyrics {
-			self.lyrics = lyrics;
+	pub fn load_from_song(&mut self, song: &Song) -> eyre::Result<bool> {
+		if let Some(ref lyrics) = song.lyrics {
+			self.lyrics = Rc::clone(lyrics);
 		} else {
-			return self.load_file_if_exists(song.lrc_file);
+			return self.load_file_if_exists(song.lrc_file.clone());
 		}
 
-		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
+		self.time_index = TimeIndex::new(self.lyrics.borrow().lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
-		self.lrc_file_path = song.lrc_file;
+		self.lrc_file_path = song.lrc_file.clone();
 
 		Ok(true)
 	}
@@ -44,13 +46,15 @@ impl LyricsState {
 	pub fn load_file_if_exists(&mut self, lrc_path: PathBuf) -> eyre::Result<bool> {
 		let exists = if lrc_path.exists() {
 			self.lyrics
+				.borrow_mut()
 				.read_overwrite(BufReader::new(File::open(&lrc_path)?))?;
+
 			true
 		} else {
-			self.lyrics = Lyrics::default();
+			self.lyrics = Rc::new(RefCell::new(Lyrics::default()));
 			false
 		};
-		self.time_index = TimeIndex::new(self.lyrics.lines().iter());
+		self.time_index = TimeIndex::new(self.lyrics.borrow().lines().iter());
 		self.time_index_hint = TimeIndexHint::default();
 		self.lrc_file_path = lrc_path;
 		Ok(exists)
@@ -71,7 +75,7 @@ impl LyricsState {
 			self.lrc_file_path = new_file_path;
 		}
 
-		self.lyrics.write_to(&mut BufWriter::new(
+		self.lyrics.borrow().write_to(&mut BufWriter::new(
 			OpenOptions::new()
 				.read(false)
 				.write(true)
@@ -87,12 +91,16 @@ impl LyricsState {
 
 	pub fn undo(&mut self) -> eyre::Result<()> {
 		self.changed = true;
-		self.history.undo(&mut self.lyrics, &mut self.time_index)
+
+		self.history
+			.undo(&mut self.lyrics.borrow_mut(), &mut self.time_index)
 	}
 
 	pub fn redo(&mut self) -> eyre::Result<()> {
 		self.changed = true;
-		self.history.redo(&mut self.lyrics, &mut self.time_index)
+
+		self.history
+			.redo(&mut self.lyrics.borrow_mut(), &mut self.time_index)
 	}
 
 	pub fn set_timestamp(
@@ -102,6 +110,7 @@ impl LyricsState {
 	) -> eyre::Result<()> {
 		let prev_val = self
 			.lyrics
+			.borrow()
 			.time_at_cursor(cursor_pos.x, cursor_pos.y)
 			.map(|x| x.time());
 		let edit = Edit::new(
@@ -114,7 +123,7 @@ impl LyricsState {
 				timestamp: prev_val,
 			},
 		);
-		edit.execute_forwards(&mut self.lyrics, &mut self.time_index)?;
+		edit.execute_forwards(&mut self.lyrics.borrow_mut(), &mut self.time_index)?;
 		self.history.push(edit);
 		self.changed = true;
 

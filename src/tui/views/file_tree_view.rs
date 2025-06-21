@@ -9,8 +9,9 @@ use crate::{
 };
 
 use ratatui::{
-	layout::{Constraint, Layout, Position},
+	layout::{Alignment, Constraint, Flex, Layout, Position},
 	prelude::{Buffer, Rect},
+	style::{Color, Style},
 	text::{Span, Text},
 	widgets::{Block, Borders, StatefulWidget, Widget},
 };
@@ -45,7 +46,7 @@ impl FileTreeView {
 			"No file or directory selected"
 		);
 		match state.file_browser.items[line].clone() {
-			FileBrowserItem::Song(song) => {
+			FileBrowserItem::Song(ref song) => {
 				state.audio.audio_player =
 					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
 
@@ -54,7 +55,7 @@ impl FileTreeView {
 			}
 			FileBrowserItem::Directory(directory) => {
 				self.go_to(state, 0);
-				state.file_browser.open_directory(&directory)?;
+				state.file_browser.open_directory(&directory.clone())?;
 			}
 		}
 
@@ -140,7 +141,7 @@ impl StatefulWidget for FileTreeView {
 				}
 				FileBrowserItem::Song(ref song) => {
 					if let Some(ref lyrics) = song.lyrics {
-						LyricsPreviewWidget::new(lyrics, &state.config)
+						LyricsPreviewWidget::new(&lyrics.borrow(), &state.config)
 							.render(right_block_inner, buf);
 					} else {
 						Text::from("No lyrics file associated with this file.")
@@ -186,10 +187,31 @@ impl StatefulWidget for FileTreeView {
 					FileBrowserItem::Directory(_) => " ",
 				};
 
-				Span::styled(format!("{} {}", icon, item.name()), style).render(
-					layout[index - state.file_browser.cursor.scroll().y as usize],
-					buf,
-				);
+				let area = layout[index - state.file_browser.cursor.scroll().y as usize];
+
+				let [left, right] =
+					Layout::horizontal([Constraint::Percentage(90), Constraint::Fill(1)])
+						.flex(Flex::SpaceBetween)
+						.areas(area);
+
+				Span::styled(format!("{} {}", icon, item.name()), style).render(left, buf);
+
+				if let FileBrowserItem::Song(song) = item {
+					let sync_percentage = song
+						.lyrics
+						.as_ref()
+						.map_or(0, |lyrics| lyrics.borrow().sync_percentage());
+
+					let color = match sync_percentage {
+						0..=40 => Color::Red,
+						41..=60 => Color::Yellow,
+						61.. => Color::Green,
+					};
+
+					Text::styled(format!(" {}%", sync_percentage), Style::from(color))
+						.alignment(Alignment::Right)
+						.render(right, buf);
+				}
 			}
 		}
 	}
