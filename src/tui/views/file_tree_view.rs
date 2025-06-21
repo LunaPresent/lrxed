@@ -130,7 +130,7 @@ impl StatefulWidget for FileTreeView {
 		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
 		let layout = Layout::vertical(constraints).split(content);
 
-		{
+		if !state.file_browser.items.is_empty() {
 			let right_block = Block::new().borders(Borders::LEFT);
 			let right_block_inner = right_block.inner(right);
 
@@ -197,20 +197,23 @@ impl StatefulWidget for FileTreeView {
 				Span::styled(format!("{} {}", icon, item.name()), style).render(left, buf);
 
 				if let FileBrowserItem::Song(song) = item {
-					let sync_percentage = song
-						.lyrics
-						.as_ref()
-						.map_or(0, |lyrics| lyrics.borrow().sync_percentage());
+					if let Some(ref lyrics) = song.lyrics {
+						let sync_percentage = lyrics.borrow().sync_percentage();
 
-					let color = match sync_percentage {
-						0..=40 => Color::Red,
-						41..=60 => Color::Yellow,
-						61.. => Color::Green,
-					};
+						let color = match sync_percentage {
+							0..=40 => Color::Red,
+							41..=60 => Color::Yellow,
+							61.. => Color::Green,
+						};
 
-					Text::styled(format!(" {}%", sync_percentage), Style::from(color))
-						.alignment(Alignment::Right)
-						.render(right, buf);
+						Text::styled(format!(" {}%", sync_percentage), Style::from(color))
+							.alignment(Alignment::Right)
+							.render(right, buf);
+					} else {
+						Text::styled(" ", Style::from(Color::White))
+							.alignment(Alignment::Right)
+							.render(right, buf);
+					}
 				}
 			}
 		}
