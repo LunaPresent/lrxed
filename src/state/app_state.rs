@@ -48,7 +48,7 @@ impl AppState {
 
 	pub fn open_in_editor(&mut self) -> eyre::Result<()> {
 		let mut buf = Vec::new();
-		self.lyrics.lyrics.write_to(&mut buf)?;
+		self.lyrics.lyrics.borrow_mut().write_to(&mut buf)?;
 		stdout().execute(LeaveAlternateScreen)?;
 
 		let bytes = edit::edit_bytes_with_builder(
@@ -75,7 +75,12 @@ impl AppState {
 			EditAction::RestoreState(bytes),
 			EditAction::RestoreState(buf),
 		);
-		let result = edit.execute_forwards(&mut self.lyrics.lyrics, &mut self.lyrics.time_index);
+
+		let result = edit.execute_forwards(
+			&mut self.lyrics.lyrics.borrow_mut(),
+			&mut self.lyrics.time_index,
+		);
+
 		self.lyrics.history.push(edit);
 		self.lyrics.changed = true;
 
