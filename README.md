@@ -27,6 +27,14 @@ cargo install --path ./lrxed --locked
 cargo install lrxed
 ```
 
+### AUR/Arch Linux
+
+```sh
+yay -S lrxed-bin
+```
+
+Or install `lrxed-bin` from the AUR using your preferred method of installation.
+
 ### Nix/NixOS
 
 First add this repo as an input to your flake.
