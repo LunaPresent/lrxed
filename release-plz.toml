@@ -23,4 +23,5 @@ commit_parsers = [
 	{ message = "^ci", skip = true },
 	{ message = "^docs", skip = true },
 	{ message = "^chore", skip = true },
+	{ footer = "^changelog: ?ignore", skip = true },
 ]
