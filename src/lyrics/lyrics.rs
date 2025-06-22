@@ -22,13 +22,15 @@ impl Default for Lyrics {
 
 impl Lyrics {
 	pub fn sync_percentage(&self) -> u8 {
-		let synced_line_count = self
+		let (synced_line_count, line_count) = self
 			.lines()
 			.iter()
-			.filter(|line| line.timestamp().is_some())
-			.count() as f32;
+			.filter(|line| !line.text().is_empty())
+			.fold((0, 0), |(slc, lc), line| {
+				(slc + line.timestamp().is_some() as u32, lc + 1)
+			});
 
-		((synced_line_count / self.line_count() as f32) * 100.0) as u8
+		(synced_line_count * 100 / line_count.max(1)) as u8
 	}
 
 	pub fn read_overwrite(&mut self, reader: impl Read + BufRead) -> eyre::Result<()> {
