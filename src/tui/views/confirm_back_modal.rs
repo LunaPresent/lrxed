@@ -7,7 +7,7 @@ pub struct ConfirmBackModal;
 
 impl ConfirmModal for ConfirmBackModal {
 	const TITLE: &str = "Go Back?";
-	const PROMPT: &str = "Go back to file browser without saving changes?";
+	const PROMPT: &str = "Save changes before returning to file browser?";
 
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
 		state
