@@ -49,30 +49,26 @@ impl InputHandler for EditorView {
 					state
 						.lyrics
 						.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+					state
+						.file_browser
+						.update_selected_lyrics(&state.lyrics.lyrics);
 				}
 				Action::MoveCursorY { amount } => {
 					state
 						.cursor
 						.set_y(max(state.cursor.pos().y as i16 + amount, 0) as u16)
-						.update_pos(state.lyrics.lyrics.borrow().line_widths())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state
-									.lyrics
-									.lyrics
-									.borrow()
-									.line_widths()
-									.max()
-									.unwrap_or_default(),
-								state.lyrics.lyrics.borrow().line_count(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
 					state.cursor.set_y(state.cursor.pos().y);
 				}
 				Action::MoveCursorX { amount } => {
-					let borrowed = state.lyrics.lyrics.borrow();
-					let line = borrowed.lines()[state.cursor.pos().y as usize].text();
+					let line = state.lyrics.lyrics.lines()[state.cursor.pos().y as usize].text();
 
 					let x = if amount >= 0 {
 						line.chars()
@@ -104,17 +100,11 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(max(x, 0) as u16)
-						.update_pos(state.lyrics.lyrics.borrow().line_widths())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state
-									.lyrics
-									.lyrics
-									.borrow()
-									.line_widths()
-									.max()
-									.unwrap_or_default(),
-								state.lyrics.lyrics.borrow().line_count(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -124,17 +114,11 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(y)
-						.update_pos(state.lyrics.lyrics.borrow().line_widths())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state
-									.lyrics
-									.lyrics
-									.borrow()
-									.line_widths()
-									.max()
-									.unwrap_or_default(),
-								state.lyrics.lyrics.borrow().line_count(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -143,17 +127,11 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(x)
-						.update_pos(state.lyrics.lyrics.borrow().line_widths())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state
-									.lyrics
-									.lyrics
-									.borrow()
-									.line_widths()
-									.max()
-									.unwrap_or_default(),
-								state.lyrics.lyrics.borrow().line_count(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -172,17 +150,11 @@ impl InputHandler for EditorView {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.borrow().line_widths())
+							.update_pos(state.lyrics.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state
-										.lyrics
-										.lyrics
-										.borrow()
-										.line_widths()
-										.max()
-										.unwrap_or_default(),
-									state.lyrics.lyrics.borrow().line_count(),
+									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+									state.lyrics.lyrics.line_count(),
 								),
 								state.config.settings.scrolloff,
 							);
@@ -201,17 +173,11 @@ impl InputHandler for EditorView {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.borrow().line_widths())
+							.update_pos(state.lyrics.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state
-										.lyrics
-										.lyrics
-										.borrow()
-										.line_widths()
-										.max()
-										.unwrap_or_default(),
-									state.lyrics.lyrics.borrow().line_count(),
+									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+									state.lyrics.lyrics.line_count(),
 								),
 								state.config.settings.scrolloff,
 							);
@@ -239,7 +205,6 @@ impl InputHandler for EditorView {
 					if let Some(timestamp) = state
 						.lyrics
 						.lyrics
-						.borrow()
 						.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
 					{
 						player.seek(timestamp.time() + Duration::from_millis(1))?;
@@ -250,11 +215,7 @@ impl InputHandler for EditorView {
 				Action::SeekToCursorLine => {
 					let player = get_player(state)?;
 
-					if let Some(timestamp) = state
-						.lyrics
-						.lyrics
-						.borrow()
-						.time_at_line(state.cursor.pos().y)
+					if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.cursor.pos().y)
 					{
 						player.seek(timestamp.time() + Duration::from_millis(1))?;
 						(_, state.lyrics.time_index_hint) =
@@ -293,17 +254,11 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(state.cursor.pos().y + 1)
-						.update_pos(state.lyrics.lyrics.borrow().line_widths())
+						.update_pos(state.lyrics.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state
-									.lyrics
-									.lyrics
-									.borrow()
-									.line_widths()
-									.max()
-									.unwrap_or_default(),
-								state.lyrics.lyrics.borrow().line_count(),
+								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
+								state.lyrics.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -313,7 +268,6 @@ impl InputHandler for EditorView {
 					let current_timestamp = state
 						.lyrics
 						.lyrics
-						.borrow()
 						.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
 						.ok_or_eyre("No timestamp at cursor")?
 						.time();

@@ -2,6 +2,7 @@ use color_eyre::eyre;
 
 use std::{
 	borrow::Cow,
+	cell::RefCell,
 	cmp::Ordering,
 	collections::HashMap,
 	fs,
@@ -10,6 +11,7 @@ use std::{
 };
 
 use crate::{
+	lyrics::Lyrics,
 	song::{LoadSongError, Song},
 	tui::Cursor,
 };
@@ -75,10 +77,10 @@ impl Ord for FileBrowserItem {
 
 #[derive(Default)]
 pub struct FileBrowserState {
-	cache: HashMap<PathBuf, Rc<Vec<FileBrowserItem>>>,
+	cache: HashMap<PathBuf, Rc<RefCell<Vec<FileBrowserItem>>>>,
 	pub directory: PathBuf,
 	pub cursor: Cursor,
-	pub items: Rc<Vec<FileBrowserItem>>,
+	pub items: Rc<RefCell<Vec<FileBrowserItem>>>,
 }
 
 impl FileBrowserState {
@@ -87,9 +89,7 @@ impl FileBrowserState {
 	}
 
 	pub fn open_directory(&mut self, path: &Path) -> eyre::Result<()> {
-		if !path.exists() {
-			return Err(eyre::eyre!("Specified directory does not exist"));
-		}
+		eyre::ensure!(path.exists(), "Specified directory does not exist");
 
 		self.directory = path.to_path_buf();
 		self.items = Rc::clone(self.get_directory_contents());
@@ -97,7 +97,17 @@ impl FileBrowserState {
 		Ok(())
 	}
 
-	fn get_directory_contents(&mut self) -> &Rc<Vec<FileBrowserItem>> {
+	pub fn update_selected_lyrics(&mut self, lyrics: &Lyrics) {
+		if let Some(FileBrowserItem::Song(song)) = self
+			.items
+			.borrow_mut()
+			.get_mut(self.cursor.pos().y as usize)
+		{
+			song.lyrics = Some(lyrics.clone());
+		}
+	}
+
+	fn get_directory_contents(&mut self) -> &Rc<RefCell<Vec<FileBrowserItem>>> {
 		self.cache.entry(self.directory.clone()).or_insert_with(|| {
 			let Ok(directory) = fs::read_dir(&self.directory) else {
 				return Default::default();
@@ -110,7 +120,7 @@ impl FileBrowserState {
 				.collect::<Vec<_>>();
 
 			result.sort();
-			result.into()
+			RefCell::new(result).into()
 		})
 	}
 }
