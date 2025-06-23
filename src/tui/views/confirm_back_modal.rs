@@ -13,6 +13,9 @@ impl ConfirmModal for ConfirmBackModal {
 		state
 			.lyrics
 			.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+		state
+			.file_browser
+			.update_selected_lyrics(&state.lyrics.lyrics);
 
 		state.should_go_back = true;
 

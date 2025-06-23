@@ -28,6 +28,7 @@ impl FileTreeView {
 			let line = state
 				.file_browser
 				.items
+				.borrow()
 				.iter()
 				.enumerate()
 				.find(|(_, item)| **item == FileBrowserItem::Directory(prev_directory.clone()))
@@ -42,10 +43,13 @@ impl FileTreeView {
 
 	fn open_item(&self, state: &mut AppState, line: usize) -> eyre::Result<()> {
 		eyre::ensure!(
-			line < state.file_browser.items.len(),
+			line < state.file_browser.items.borrow().len(),
 			"No file or directory selected"
 		);
-		match state.file_browser.items[line].clone() {
+
+		let line = state.file_browser.items.borrow()[line].clone();
+
+		match line {
 			FileBrowserItem::Song(ref song) => {
 				state.audio.audio_player =
 					Some(state.audio.audio_device.try_play(song.mp3_file.clone())?);
@@ -63,7 +67,7 @@ impl FileTreeView {
 	}
 
 	fn go_to(&self, state: &mut AppState, target: u16) {
-		let available_lines = state.file_browser.items.len();
+		let available_lines = state.file_browser.items.borrow().len();
 
 		state
 			.file_browser
@@ -71,7 +75,7 @@ impl FileTreeView {
 			.set_y((target as u16).max(0) as u16)
 			.update_pos(iter::repeat_n(1, available_lines))
 			.update_scroll(
-				Position::new(0, state.file_browser.items.len() as u16),
+				Position::new(0, state.file_browser.items.borrow().len() as u16),
 				state.config.settings.scrolloff,
 			);
 	}
@@ -125,25 +129,28 @@ impl StatefulWidget for FileTreeView {
 			.cursor
 			.set_screen_size(Position::new(content.width, content.height));
 
-		let line_count = content.height.min(state.file_browser.items.len() as u16);
+		let line_count = content
+			.height
+			.min(state.file_browser.items.borrow().len() as u16);
 		let line = state.file_browser.cursor.pos().y as usize;
 		let constraints = Constraint::from_lengths(repeat_n(1, line_count as usize));
 		let layout = Layout::vertical(constraints).split(content);
 
-		if !state.file_browser.items.is_empty() {
+		if !state.file_browser.items.borrow().is_empty() {
 			let right_block = Block::new().borders(Borders::LEFT);
 			let right_block_inner = right_block.inner(right);
 
-			match state.file_browser.items[line] {
+			match state.file_browser.items.borrow()[line] {
 				FileBrowserItem::Directory(_) => {
 					Text::from("No preview available for directories.")
 						.render(right_block_inner, buf)
 				}
 				FileBrowserItem::Song(ref song) => {
 					if let Some(ref lyrics) = song.lyrics {
-						LyricsPreviewWidget::new(&lyrics.borrow(), &state.config)
+						LyricsPreviewWidget::new(&lyrics, &state.config)
 							.render(right_block_inner, buf);
 					} else {
+						// TODO: directory preview
 						Text::from("No lyrics file associated with this file.")
 							.render(right_block_inner, buf)
 					}
@@ -163,6 +170,7 @@ impl StatefulWidget for FileTreeView {
 			for (index, item) in state
 				.file_browser
 				.items
+				.borrow()
 				.iter()
 				.enumerate()
 				.skip(state.file_browser.cursor.scroll().y as usize)
@@ -198,7 +206,7 @@ impl StatefulWidget for FileTreeView {
 
 				if let FileBrowserItem::Song(song) = item {
 					if let Some(ref lyrics) = song.lyrics {
-						let sync_percentage = lyrics.borrow().sync_percentage();
+						let sync_percentage = lyrics.sync_percentage();
 
 						let color = match sync_percentage {
 							0..=40 => Color::Red,
