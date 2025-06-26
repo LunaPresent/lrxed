@@ -29,7 +29,7 @@ impl EditorView {
 	fn back_to_file_tree(self, state: &mut AppState) {
 		state.active_view = View::FileTree;
 		state.audio = Default::default();
-		state.lyrics = Default::default();
+		state.song = Default::default();
 		state.should_go_back = false;
 	}
 }
@@ -47,28 +47,35 @@ impl InputHandler for EditorView {
 			match action {
 				Action::Save => {
 					state
-						.lyrics
+						.song
 						.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+
 					state
 						.file_browser
-						.update_selected_lyrics(&state.lyrics.lyrics);
+						.update_selected_song(state.song.song.clone());
 				}
 				Action::MoveCursorY { amount } => {
 					state
 						.cursor
 						.set_y(max(state.cursor.pos().y as i16 + amount, 0) as u16)
-						.update_pos(state.lyrics.lyrics.line_widths())
+						.update_pos(state.song.song.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-								state.lyrics.lyrics.line_count(),
+								state
+									.song
+									.song
+									.lyrics
+									.line_widths()
+									.max()
+									.unwrap_or_default(),
+								state.song.song.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
 					state.cursor.set_y(state.cursor.pos().y);
 				}
 				Action::MoveCursorX { amount } => {
-					let line = state.lyrics.lyrics.lines()[state.cursor.pos().y as usize].text();
+					let line = state.song.song.lyrics.lines()[state.cursor.pos().y as usize].text();
 
 					let x = if amount >= 0 {
 						line.chars()
@@ -100,11 +107,17 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(max(x, 0) as u16)
-						.update_pos(state.lyrics.lyrics.line_widths())
+						.update_pos(state.song.song.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-								state.lyrics.lyrics.line_count(),
+								state
+									.song
+									.song
+									.lyrics
+									.line_widths()
+									.max()
+									.unwrap_or_default(),
+								state.song.song.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -114,11 +127,17 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_y(y)
-						.update_pos(state.lyrics.lyrics.line_widths())
+						.update_pos(state.song.song.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-								state.lyrics.lyrics.line_count(),
+								state
+									.song
+									.song
+									.lyrics
+									.line_widths()
+									.max()
+									.unwrap_or_default(),
+								state.song.song.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -127,11 +146,17 @@ impl InputHandler for EditorView {
 					state
 						.cursor
 						.set_x(x)
-						.update_pos(state.lyrics.lyrics.line_widths())
+						.update_pos(state.song.song.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-								state.lyrics.lyrics.line_count(),
+								state
+									.song
+									.song
+									.lyrics
+									.line_widths()
+									.max()
+									.unwrap_or_default(),
+								state.song.song.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -141,20 +166,26 @@ impl InputHandler for EditorView {
 
 					// TODO: get cursor x position from time and set it
 					let time;
-					(time, state.lyrics.time_index_hint) = state
-						.lyrics
+					(time, state.song.time_index_hint) = state
+						.song
 						.time_index
-						.find_seq(player.position(), state.lyrics.time_index_hint);
+						.find_seq(player.position(), state.song.time_index_hint);
 
 					if let Some(y) = time.line_num {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.line_widths())
+							.update_pos(state.song.song.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-									state.lyrics.lyrics.line_count(),
+									state
+										.song
+										.song
+										.lyrics
+										.line_widths()
+										.max()
+										.unwrap_or_default(),
+									state.song.song.lyrics.line_count(),
 								),
 								state.config.settings.scrolloff,
 							);
@@ -164,20 +195,26 @@ impl InputHandler for EditorView {
 					let player = get_player(state)?;
 
 					let time;
-					(time, state.lyrics.time_index_hint) = state
-						.lyrics
+					(time, state.song.time_index_hint) = state
+						.song
 						.time_index
-						.find_seq(player.position(), state.lyrics.time_index_hint);
+						.find_seq(player.position(), state.song.time_index_hint);
 
 					if let Some(y) = time.line_num {
 						state
 							.cursor
 							.set_y(y)
-							.update_pos(state.lyrics.lyrics.line_widths())
+							.update_pos(state.song.song.lyrics.line_widths())
 							.update_scroll(
 								Position::new(
-									state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-									state.lyrics.lyrics.line_count(),
+									state
+										.song
+										.song
+										.lyrics
+										.line_widths()
+										.max()
+										.unwrap_or_default(),
+									state.song.song.lyrics.line_count(),
 								),
 								state.config.settings.scrolloff,
 							);
@@ -186,8 +223,7 @@ impl InputHandler for EditorView {
 				Action::SeekRelative { progress } => {
 					let pos = state.audio.seek_relative(progress)?;
 					if let Some(time) = pos {
-						(_, state.lyrics.time_index_hint) =
-							state.lyrics.time_index.find_random(time);
+						(_, state.song.time_index_hint) = state.song.time_index.find_random(time);
 					}
 				}
 				Action::SeekBackwards { seconds } => {
@@ -203,23 +239,25 @@ impl InputHandler for EditorView {
 					let player = get_player(state)?;
 
 					if let Some(timestamp) = state
-						.lyrics
+						.song
+						.song
 						.lyrics
 						.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
 					{
 						player.seek(timestamp.time() + Duration::from_millis(1))?;
-						(_, state.lyrics.time_index_hint) =
-							state.lyrics.time_index.find_random(timestamp.time());
+						(_, state.song.time_index_hint) =
+							state.song.time_index.find_random(timestamp.time());
 					}
 				}
 				Action::SeekToCursorLine => {
 					let player = get_player(state)?;
 
-					if let Some(timestamp) = state.lyrics.lyrics.time_at_line(state.cursor.pos().y)
+					if let Some(timestamp) =
+						state.song.song.lyrics.time_at_line(state.cursor.pos().y)
 					{
 						player.seek(timestamp.time() + Duration::from_millis(1))?;
-						(_, state.lyrics.time_index_hint) =
-							state.lyrics.time_index.find_random(timestamp.time());
+						(_, state.song.time_index_hint) =
+							state.song.time_index.find_random(timestamp.time());
 					}
 				}
 				Action::TogglePause => {
@@ -241,24 +279,30 @@ impl InputHandler for EditorView {
 					player.set_speed(1.);
 				}
 				Action::Undo => {
-					state.lyrics.undo()?;
+					state.song.undo()?;
 				}
 				Action::Redo => {
-					state.lyrics.redo()?;
+					state.song.redo()?;
 				}
 				Action::SyncTimestamp => {
 					let player = get_player(state)?;
 					state
-						.lyrics
+						.song
 						.set_timestamp(state.cursor.pos(), Some(player.position()))?;
 					state
 						.cursor
 						.set_y(state.cursor.pos().y + 1)
-						.update_pos(state.lyrics.lyrics.line_widths())
+						.update_pos(state.song.song.lyrics.line_widths())
 						.update_scroll(
 							Position::new(
-								state.lyrics.lyrics.line_widths().max().unwrap_or_default(),
-								state.lyrics.lyrics.line_count(),
+								state
+									.song
+									.song
+									.lyrics
+									.line_widths()
+									.max()
+									.unwrap_or_default(),
+								state.song.song.lyrics.line_count(),
 							),
 							state.config.settings.scrolloff,
 						);
@@ -266,7 +310,8 @@ impl InputHandler for EditorView {
 				}
 				Action::AdjustTimestamp { centis } => {
 					let current_timestamp = state
-						.lyrics
+						.song
+						.song
 						.lyrics
 						.time_at_cursor(state.cursor.pos().x, state.cursor.pos().y)
 						.ok_or_eyre("No timestamp at cursor")?
@@ -276,14 +321,14 @@ impl InputHandler for EditorView {
 						0,
 					) as u64);
 					state
-						.lyrics
+						.song
 						.set_timestamp(state.cursor.pos(), Some(timestamp))?;
 				}
 				Action::OpenInEditor => {
 					state.open_in_editor()?;
 				}
-				Action::Cancel if state.file_browser.directory.exists() => {
-					if state.lyrics.changed {
+				Action::Cancel if state.file_browser.directory().exists() => {
+					if state.song.changed {
 						state.active_modal = Some(Modal::GoBack);
 					} else {
 						self.back_to_file_tree(state);

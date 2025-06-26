@@ -2,16 +2,13 @@ use color_eyre::eyre;
 
 use std::{
 	borrow::Cow,
-	cell::RefCell,
 	cmp::Ordering,
 	collections::HashMap,
 	fs,
 	path::{Path, PathBuf},
-	rc::Rc,
 };
 
 use crate::{
-	lyrics::Lyrics,
 	song::{LoadSongError, Song},
 	tui::Cursor,
 };
@@ -77,13 +74,26 @@ impl Ord for FileBrowserItem {
 
 #[derive(Default)]
 pub struct FileBrowserState {
-	cache: HashMap<PathBuf, Rc<RefCell<Vec<FileBrowserItem>>>>,
-	pub directory: PathBuf,
+	cache: HashMap<PathBuf, Vec<FileBrowserItem>>,
+	directory: PathBuf,
 	pub cursor: Cursor,
-	pub items: Rc<RefCell<Vec<FileBrowserItem>>>,
 }
 
 impl FileBrowserState {
+	pub fn items(&self) -> &[FileBrowserItem] {
+		self.cache.get(&self.directory).map_or(&[], |result| result)
+	}
+
+	pub fn items_mut(&mut self) -> &mut [FileBrowserItem] {
+		self.cache
+			.get_mut(&self.directory)
+			.map_or(&mut [], |result| result)
+	}
+
+	pub fn directory(&self) -> &Path {
+		self.directory.as_path()
+	}
+
 	pub fn parent(&self) -> Option<PathBuf> {
 		self.directory.parent().map(PathBuf::from)
 	}
@@ -92,35 +102,33 @@ impl FileBrowserState {
 		eyre::ensure!(path.exists(), "Specified directory does not exist");
 
 		self.directory = path.to_path_buf();
-		self.items = Rc::clone(self.get_directory_contents());
+
+		if !self.cache.contains_key(&self.directory) {
+			self.cache.insert(path.to_path_buf(), {
+				match fs::read_dir(&self.directory) {
+					Ok(directory) => {
+						let mut result = directory
+							.filter_map(|item| item.map_or(None, |r| Some(r.path())))
+							.map(|path| FileBrowserItem::try_from(path.as_path()))
+							.filter_map(|result| result.map_or(None, Some))
+							.collect::<Vec<_>>();
+
+						result.sort();
+						result.into()
+					}
+					Err(_) => vec![],
+				}
+			});
+		}
 
 		Ok(())
 	}
 
-	pub fn update_selected_lyrics(&mut self, lyrics: &Lyrics) {
-		if let Some(FileBrowserItem::Song(song)) = self
-			.items
-			.borrow_mut()
-			.get_mut(self.cursor.pos().y as usize)
-		{
-			song.lyrics = Some(lyrics.clone());
+	pub fn update_selected_song(&mut self, new_song: Song) {
+		let index = self.cursor.pos().y as usize;
+
+		if let Some(FileBrowserItem::Song(song)) = self.items_mut().get_mut(index) {
+			*song = new_song;
 		}
-	}
-
-	fn get_directory_contents(&mut self) -> &Rc<RefCell<Vec<FileBrowserItem>>> {
-		self.cache.entry(self.directory.clone()).or_insert_with(|| {
-			let Ok(directory) = fs::read_dir(&self.directory) else {
-				return Default::default();
-			};
-
-			let mut result = directory
-				.filter_map(|item| item.map_or(None, |r| Some(r.path())))
-				.map(|path| FileBrowserItem::try_from(path.as_path()))
-				.filter_map(|result| result.map_or(None, Some))
-				.collect::<Vec<_>>();
-
-			result.sort();
-			RefCell::new(result).into()
-		})
 	}
 }

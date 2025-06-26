@@ -1,4 +1,4 @@
-use super::{AudioState, Config, FileBrowserState, LyricsState, ModalState, ToastState};
+use super::{AudioState, Config, FileBrowserState, ModalState, SongState, ToastState};
 use std::{ffi::OsString, io::stdout};
 
 use color_eyre::eyre;
@@ -16,7 +16,7 @@ use crate::{
 pub struct AppState {
 	pub audio: AudioState,
 	pub file_browser: FileBrowserState,
-	pub lyrics: LyricsState,
+	pub song: SongState,
 	pub modal: ModalState,
 	pub cursor: Cursor,
 	pub config: Config,
@@ -33,7 +33,7 @@ impl AppState {
 		Self {
 			audio: Default::default(),
 			file_browser: Default::default(),
-			lyrics: Default::default(),
+			song: Default::default(),
 			modal: Default::default(),
 			cursor: Default::default(),
 			config: Default::default(),
@@ -48,7 +48,7 @@ impl AppState {
 
 	pub fn open_in_editor(&mut self) -> eyre::Result<()> {
 		let mut buf = Vec::new();
-		self.lyrics.lyrics.write_to(&mut buf)?;
+		self.song.song.lyrics.write_to(&mut buf)?;
 		stdout().execute(LeaveAlternateScreen)?;
 
 		let bytes = edit::edit_bytes_with_builder(
@@ -56,8 +56,9 @@ impl AppState {
 			Builder::new()
 				.prefix(
 					&self
-						.lyrics
-						.lrc_file_path
+						.song
+						.song
+						.lrc_file
 						.file_stem()
 						.unwrap_or(Into::<OsString>::into("lyrics").as_os_str()),
 				)
@@ -76,10 +77,10 @@ impl AppState {
 			EditAction::RestoreState(buf),
 		);
 
-		let result = edit.execute_forwards(&mut self.lyrics.lyrics, &mut self.lyrics.time_index);
+		let result = edit.execute_forwards(&mut self.song.song.lyrics, &mut self.song.time_index);
 
-		self.lyrics.history.push(edit);
-		self.lyrics.changed = true;
+		self.song.history.push(edit);
+		self.song.changed = true;
 
 		result
 	}
