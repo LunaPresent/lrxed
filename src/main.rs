@@ -134,7 +134,7 @@ async fn main() -> Result<()> {
 
 		state.audio.audio_player = Some(state.audio.audio_device.try_play(song.mp3_file)?);
 
-		state.lyrics.load_file_if_exists(song.lrc_file)?;
+		state.song.load_file_if_exists(song.lrc_file)?;
 	} else {
 		state = AppState::new(View::FileTree);
 		state.file_browser.open_directory(&path)?;

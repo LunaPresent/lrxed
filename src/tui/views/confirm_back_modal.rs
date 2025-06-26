@@ -11,11 +11,12 @@ impl ConfirmModal for ConfirmBackModal {
 
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
 		state
-			.lyrics
+			.song
 			.write_to_file(state.config.settings.replace_txt_file_on_save)?;
+
 		state
 			.file_browser
-			.update_selected_lyrics(&state.lyrics.lyrics);
+			.update_selected_song(state.song.song.clone());
 
 		state.should_go_back = true;
 

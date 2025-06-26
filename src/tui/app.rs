@@ -88,7 +88,7 @@ impl InputHandler for App {
 			match state.config.keys.get_action(key_chord, Context::Global) {
 				// global keys here
 				Some(Action::Quit) => {
-					if state.lyrics.changed {
+					if state.song.changed {
 						state.active_modal = Some(Modal::ConfirmQuit);
 					} else {
 						state.should_quit = true;

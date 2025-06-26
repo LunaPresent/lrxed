@@ -11,7 +11,7 @@ impl ConfirmModal for ConfirmQuitModal {
 
 	fn exec_yes(self, state: &mut AppState) -> eyre::Result<()> {
 		state
-			.lyrics
+			.song
 			.write_to_file(state.config.settings.replace_txt_file_on_save)?;
 
 		state.should_quit = true;

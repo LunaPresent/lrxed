@@ -3,6 +3,7 @@ use thiserror::Error;
 
 use std::{
 	convert::identity,
+	fmt::Debug,
 	fs::File,
 	io::BufReader,
 	path::{Path, PathBuf},
@@ -43,12 +44,12 @@ impl From<Tag> for SongMeta {
 	}
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Default, PartialEq, Eq)]
 pub struct Song {
 	pub mp3_file: PathBuf,
 	pub meta: Option<SongMeta>,
 	pub lrc_file: PathBuf,
-	pub lyrics: Option<Lyrics>,
+	pub lyrics: Lyrics,
 }
 
 impl Song {
@@ -88,10 +89,10 @@ impl Song {
 			if result.read_overwrite(reader).is_err() {
 				return Err(LoadSongError::FailedToReadLyrics);
 			} else {
-				Some(result)
+				result
 			}
 		} else {
-			None
+			Lyrics::default()
 		};
 
 		Ok(Self {

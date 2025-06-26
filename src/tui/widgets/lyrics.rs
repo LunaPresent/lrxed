@@ -21,7 +21,7 @@ impl StatefulWidget for LyricsWidget {
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
 		let rows = cmp::min(
 			area.height,
-			state.lyrics.lyrics.line_count() - state.cursor.scroll().y,
+			state.song.song.lyrics.line_count() - state.cursor.scroll().y,
 		) as usize;
 
 		let layout = Layout::vertical(
@@ -32,7 +32,8 @@ impl StatefulWidget for LyricsWidget {
 		let (_fill, line_areas) = areas.split_last().unwrap();
 
 		let lyrics_lines = state
-			.lyrics
+			.song
+			.song
 			.lyrics
 			.lines()
 			.iter()
@@ -63,10 +64,10 @@ impl StatefulWidget for LyricsWidget {
 
 		let mut current_lyric_line = TimeIndexEntry::default();
 		if let Some(player) = &state.audio.audio_player {
-			(current_lyric_line, state.lyrics.time_index_hint) = state
-				.lyrics
+			(current_lyric_line, state.song.time_index_hint) = state
+				.song
 				.time_index
-				.find_seq(player.position(), state.lyrics.time_index_hint);
+				.find_seq(player.position(), state.song.time_index_hint);
 		}
 
 		for ((line_num, lyric_line), &line_area) in lyrics_lines.zip(line_areas) {
