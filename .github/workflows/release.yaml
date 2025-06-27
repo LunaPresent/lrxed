@@ -30,7 +30,7 @@ jobs:
         include:
         - target: aarch64-unknown-linux-gnu
           os: ubuntu-22.04
-          deps: "libasound2-dev:amd64"
+          deps: "libasound2-dev:arm64"
         - target: aarch64-apple-darwin
           os: macos-13
         - target: aarch64-pc-windows-msvc
