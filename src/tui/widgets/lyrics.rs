@@ -19,10 +19,12 @@ impl StatefulWidget for LyricsWidget {
 	type State = AppState;
 
 	fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
-		let rows = cmp::min(
-			area.height,
-			state.song.song.lyrics.line_count() - state.cursor.scroll().y,
-		) as usize;
+		let scroll_y = state
+			.cursor
+			.scroll()
+			.y
+			.min(state.song.song.lyrics.line_count().max(1) - 1);
+		let rows = cmp::min(area.height, state.song.song.lyrics.line_count() - scroll_y) as usize;
 
 		let layout = Layout::vertical(
 			iter::repeat_n(Constraint::Length(1), rows).chain(iter::once(Constraint::Fill(1))),
@@ -38,7 +40,7 @@ impl StatefulWidget for LyricsWidget {
 			.lines()
 			.iter()
 			.enumerate()
-			.skip(state.cursor.scroll().y as usize)
+			.skip(scroll_y as usize)
 			.take(rows);
 
 		let line_layout = Layout::horizontal([
@@ -48,9 +50,7 @@ impl StatefulWidget for LyricsWidget {
 			Constraint::Fill(1),
 		]);
 
-		if let Some(&line_area) =
-			line_areas.get((state.cursor.pos().y - state.cursor.scroll().y) as usize)
-		{
+		if let Some(&line_area) = line_areas.get((state.cursor.pos().y - scroll_y) as usize) {
 			Block::new()
 				.style(state.config.theme.cursorline)
 				.render(line_area, buf);
