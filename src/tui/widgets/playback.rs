@@ -10,6 +10,8 @@ use crate::state::AppState;
 
 use super::volume::VolumeWidget;
 
+const BAR_FULL_OFFSET: f64 = 0.03125;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PlaybackWidget;
 
@@ -58,7 +60,11 @@ impl StatefulWidget for PlaybackWidget {
 				let sd = player.duration().as_secs() % 60;
 				let cd = player.duration().subsec_millis() / 10;
 				let bar = LineGauge::default()
-					.ratio(player.position().as_secs_f64() / player.duration().as_secs_f64())
+					.ratio(
+						(player.position().as_secs_f64()
+							/ (player.duration().as_secs_f64() - BAR_FULL_OFFSET))
+							.min(1.0),
+					)
 					.unfilled_style(state.config.theme.inactive)
 					.filled_style(state.config.theme.accent)
 					.label("");
