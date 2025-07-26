@@ -293,7 +293,8 @@ impl InputHandler for EditorView {
 							(TimeDelta::from_std(player.position()).unwrap_or_default()
 								+ state.config.settings.sync_offset)
 								.to_std()
-								.unwrap_or_default(),
+								.unwrap_or_default()
+								.min(player.duration()),
 						),
 					)?;
 					state
