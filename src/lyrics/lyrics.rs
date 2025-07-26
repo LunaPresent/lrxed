@@ -42,6 +42,7 @@ impl Lyrics {
 		if self.lines.is_empty() {
 			self.lines.push(Default::default());
 		}
+
 		Ok(())
 	}
 

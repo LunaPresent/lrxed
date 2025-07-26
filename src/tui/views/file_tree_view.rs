@@ -199,7 +199,7 @@ impl StatefulWidget for FileTreeView {
 				Span::styled(format!("{} {}", icon, item.name()), style).render(left, buf);
 
 				if let FileBrowserItem::Song(song) = item {
-					if song.lrc_file.exists() {
+					if song.has_file {
 						let sync_percentage = song.lyrics.sync_percentage();
 
 						let color = match sync_percentage {

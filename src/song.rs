@@ -50,6 +50,7 @@ pub struct Song {
 	pub meta: Option<SongMeta>,
 	pub lrc_file: PathBuf,
 	pub lyrics: Lyrics,
+	pub has_file: bool,
 }
 
 impl Song {
@@ -82,17 +83,17 @@ impl Song {
 			.map_or(None, identity)
 			.map(SongMeta::from);
 
-		let lyrics = if let Ok(file) = File::open(&lrc_file) {
+		let (lyrics, has_file) = if let Ok(file) = File::open(&lrc_file) {
 			let reader = BufReader::new(file);
 			let mut result = Lyrics::default();
 
 			if result.read_overwrite(reader).is_err() {
 				return Err(LoadSongError::FailedToReadLyrics);
 			} else {
-				result
+				(result, true)
 			}
 		} else {
-			Lyrics::default()
+			(Lyrics::default(), false)
 		};
 
 		Ok(Self {
@@ -100,6 +101,7 @@ impl Song {
 			mp3_file,
 			lrc_file,
 			lyrics,
+			has_file,
 		})
 	}
 

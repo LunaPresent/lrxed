@@ -76,6 +76,7 @@ impl SongState {
 				.open(&self.song.lrc_file)?,
 		))?;
 
+		self.song.has_file = true;
 		self.changed = false;
 
 		Ok(())
