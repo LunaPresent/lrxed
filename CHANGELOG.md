@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.1.4](https://github.com/LunaPresent/lrxed/compare/v0.1.3...v0.1.4) - 2025-07-26
+
+### Added
+
+- _(config)_ add settings.sync-offset option
+
+### Fixed
+
+- fix overflow when scroll exceeds amount of lines in lyrics editor
+- fix crash on song end when metadata duration doesn't quite match actual duration
+
+### Performance
+
+- _(ui)_ cache lyrics sync percentage
+- _(ui)_ cache whether a song has a lyrics file
+
 ## [0.1.3](https://github.com/LunaPresent/lrxed/compare/v0.1.2...v0.1.3) - 2025-06-27
 
 ### Added
