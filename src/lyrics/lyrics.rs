@@ -9,6 +9,7 @@ use super::{Timestamp, lyric_line::LyricLine, metadata::Metadata};
 pub struct Lyrics {
 	metadata: Vec<Metadata>,
 	lines: Vec<LyricLine>,
+	sync_percentage: u8,
 }
 
 impl Default for Lyrics {
@@ -16,12 +17,13 @@ impl Default for Lyrics {
 		Self {
 			metadata: Default::default(),
 			lines: vec![LyricLine::default()],
+			sync_percentage: 0,
 		}
 	}
 }
 
 impl Lyrics {
-	pub fn sync_percentage(&self) -> u8 {
+	fn calc_sync_percentage(&self) -> u8 {
 		let (synced_line_count, line_count) = self
 			.lines()
 			.iter()
@@ -33,6 +35,10 @@ impl Lyrics {
 		(synced_line_count * 100 / line_count.max(1)) as u8
 	}
 
+	pub fn sync_percentage(&self) -> u8 {
+		self.sync_percentage
+	}
+
 	pub fn read_overwrite(&mut self, reader: impl Read + BufRead) -> eyre::Result<()> {
 		self.metadata.clear();
 		self.lines.clear();
@@ -42,6 +48,8 @@ impl Lyrics {
 		if self.lines.is_empty() {
 			self.lines.push(Default::default());
 		}
+
+		self.sync_percentage = self.calc_sync_percentage();
 
 		Ok(())
 	}
@@ -99,6 +107,8 @@ impl Lyrics {
 				self.parse_append_line(line);
 			}
 		}
+
+		self.sync_percentage = self.calc_sync_percentage();
 	}
 
 	fn parse_append_line_with_tag(&mut self, tag: &str, tag_delim: usize, mut text: &str) {
@@ -128,10 +138,6 @@ impl Lyrics {
 		self.lines.as_slice()
 	}
 
-	pub fn lines_mut(&mut self) -> &mut [LyricLine] {
-		self.lines.as_mut_slice()
-	}
-
 	pub fn line_count(&self) -> u16 {
 		self.lines.len() as u16
 	}
@@ -147,5 +153,10 @@ impl Lyrics {
 	pub fn time_at_cursor(&self, _x: u16, y: u16) -> Option<&Timestamp> {
 		// TODO: karaoke: use x position to get word if possible, fallback to line
 		self.lines.get(y as usize).and_then(|line| line.timestamp())
+	}
+
+	pub fn set_timestamp_at_line(&mut self, index: usize, timestamp: Option<impl Into<Timestamp>>) {
+		self.lines[index].set_timestamp(timestamp);
+		self.sync_percentage = self.calc_sync_percentage();
 	}
 }
