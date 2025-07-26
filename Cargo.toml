@@ -20,7 +20,7 @@ ratatui = "0.29.0"
 rodio = { version = "0.20.1", default-features = false, features = ["symphonia-all"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
-serde_with = "3.12.0"
+serde_with = { version = "3.12.0", features = ["chrono"] }
 serde_yml = "0.0.12"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.12"
