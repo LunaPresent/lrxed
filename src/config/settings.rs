@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_with::{DurationSecondsWithFrac, serde_as};
+use serde_with::{DurationSecondsWithFrac, chrono::TimeDelta, serde_as};
 use std::{path::PathBuf, time::Duration};
 
 #[serde_as]
@@ -12,6 +12,8 @@ pub struct Settings {
 	pub replace_txt_file_on_save: bool,
 	#[serde_as(as = "DurationSecondsWithFrac<f64>")]
 	pub notification_timeout: Duration,
+	#[serde_as(as = "DurationSecondsWithFrac<f64>")]
+	pub sync_offset: TimeDelta,
 }
 
 impl Default for Settings {
@@ -21,6 +23,7 @@ impl Default for Settings {
 			default_path: None,
 			replace_txt_file_on_save: false,
 			notification_timeout: Duration::from_secs(5),
+			sync_offset: TimeDelta::zero(),
 		}
 	}
 }

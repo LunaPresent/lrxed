@@ -9,6 +9,7 @@ use ratatui::{
 	layout::{Constraint, Layout, Position},
 	widgets::StatefulWidget,
 };
+use serde_with::chrono::TimeDelta;
 use unicode_width::{UnicodeWidthChar, UnicodeWidthStr};
 
 use crate::{
@@ -286,9 +287,15 @@ impl InputHandler for EditorView {
 				}
 				Action::SyncTimestamp => {
 					let player = get_player(state)?;
-					state
-						.song
-						.set_timestamp(state.cursor.pos(), Some(player.position()))?;
+					state.song.set_timestamp(
+						state.cursor.pos(),
+						Some(
+							(TimeDelta::from_std(player.position()).unwrap_or_default()
+								+ state.config.settings.sync_offset)
+								.to_std()
+								.unwrap_or_default(),
+						),
+					)?;
 					state
 						.cursor
 						.set_y(state.cursor.pos().y + 1)
