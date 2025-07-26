@@ -20,7 +20,8 @@ impl EditAction {
 				if lyrics.line_count() <= *idx {
 					return Err(eyre::eyre!("Line index out of range"));
 				}
-				lyrics.lines_mut()[*idx as usize].set_timestamp(*timestamp);
+
+				lyrics.set_timestamp_at_line(*idx as usize, *timestamp);
 				time_index.rebuild(lyrics.lines().iter());
 			}
 			EditAction::RestoreState(buffer) => {
