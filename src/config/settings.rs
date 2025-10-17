@@ -1,11 +1,14 @@
+use core::time::Duration;
+use std::path::PathBuf;
+
+use oprabeli::bevy_ecs;
+use oprabeli::bevy_ecs::resource::Resource;
 use serde::{Deserialize, Serialize};
-use serde_with::{DurationSecondsWithFrac, chrono::TimeDelta, serde_as};
-use std::{path::PathBuf, time::Duration};
+use serde_with::{DurationSecondsWithFrac, chrono, serde_as};
 
 #[serde_as]
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Resource)]
 #[serde(rename_all = "kebab-case")]
-#[serde(default)]
 pub struct Settings {
 	pub scrolloff: u16,
 	pub default_path: Option<PathBuf>,
@@ -13,17 +16,5 @@ pub struct Settings {
 	#[serde_as(as = "DurationSecondsWithFrac<f64>")]
 	pub notification_timeout: Duration,
 	#[serde_as(as = "DurationSecondsWithFrac<f64>")]
-	pub sync_offset: TimeDelta,
-}
-
-impl Default for Settings {
-	fn default() -> Self {
-		Self {
-			scrolloff: 8,
-			default_path: None,
-			replace_txt_file_on_save: false,
-			notification_timeout: Duration::from_secs(5),
-			sync_offset: TimeDelta::zero(),
-		}
-	}
+	pub sync_offset: chrono::TimeDelta,
 }

@@ -1,6 +1,7 @@
 [package]
 name = "lrxed"
-version = "0.1.4"
+build = "build.rs"
+version = "0.2.0"
 edition = "2024"
 authors = ["Luna Present <code@lunapresent.net>", "Luna Heyman <luna.heyman@proton.me>"]
 description = "A tui application for synchronising lyrics"
@@ -10,21 +11,30 @@ keywords = ["music", "lyrics", "synced-lyrics"]
 categories = ["multimedia::audio"]
 
 [dependencies]
-clap = { version = "4.5.37", features = ["derive"] }
-color-eyre = "0.6.4"
-crossterm = { version = "0.29.0", features = ["event-stream", "serde"] }
+oprabeli.path = "./oprabeli"
+clap = { version = "4.5.49", features = [
+	"derive",
+	"cargo",
+	"wrap_help",
+	"unicode",
+	"string",
+	"unstable-styles",
+] }
+color-eyre = "0.6.5"
+config = "0.15.18"
+derive_more = { version = "2.0.1", features = ["deref", "display"] }
 directories = "6.0.0"
 edit = "0.1.5"
 lofty = "0.22.4"
-ratatui = "0.29.0"
-rodio = { version = "0.20.1", default-features = false, features = ["symphonia-all"] }
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = "1.0.140"
-serde_with = { version = "3.12.0", features = ["chrono"] }
-serde_yml = "0.0.12"
-strum = { version = "0.27.1", features = ["derive"] }
-thiserror = "2.0.12"
-tokio = { version = "1.44.2", features = ["macros", "rt-multi-thread", "time"] }
-tokio-stream = "0.1.17"
-toml = "0.8.22"
+notify = "8.2.0"
+rodio = "0.21.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_with = { version = "3.15.0", features = ["chrono"] }
+strum = { version = "0.27.2", features = ["derive"] }
+thiserror = "2.0.17"
+tokio = { version = "1.48.0", features = ["full"] }
 unicode-width = { version = "0.2.0", default-features = false }
+
+[build-dependencies]
+anyhow = "1.0.100"
+vergen-git2 = { version = "1.0.7", features = ["build", "cargo"] }

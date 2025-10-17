@@ -1,0 +1,25 @@
+[package]
+name = "oprabeli"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/LunaPresent/oprabeli"
+authors = ["Luna Present <code@lunapresent.net>"]
+
+[dependencies]
+bevy_ecs = "0.17.0"
+crossterm = { version = "0.29.0", features = ["event-stream"] }
+derive_more = { version = "2.0.1", features = ["deref", "deref_mut", "from"] }
+eyre = "0.6.12"
+futures = "0.3.31"
+ratatui = { version = "0.29.0", features = ["serde", "unstable-widget-ref"] }
+serde = { version = "1.0.219", features = ["derive"] }
+signal-hook = "0.3.18"
+tokio = { version = "1.0.0", features = ["rt"] }
+tokio-util = "0.7.0"
+thiserror = "2.0.14"
+serde_with = "3.14.0"
+smallvec = { version = "1.15.1", features = ["serde"] }
+
+[dev-dependencies]
+serde_json = "1.0.141"

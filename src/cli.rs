@@ -1,28 +1,46 @@
 use std::path::PathBuf;
 
-use clap::{Parser, ValueEnum};
+use clap::Parser;
+use directories::ProjectDirs;
 
-/// A tui application for synchronising lyrics
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-pub struct Args {
-	pub path: Option<PathBuf>,
+#[command(author, version = version(), about)]
+pub struct Args {}
 
-	#[arg(long, value_name = "PATH")]
-	/// path to config file to use instead of the default location
-	pub config: Option<PathBuf>,
-	#[arg(long, value_name = "FORMAT")]
-	/// print the user config, or the defaults for unset values, then exit
-	pub print_config: Option<Option<ConfigFiletype>>,
-	/// print the location of the user config, then exit
-	#[arg(long, value_name = "FORMAT")]
-	pub print_config_path: Option<Option<ConfigFiletype>>,
+pub struct Cli {
+	#[allow(dead_code)]
+	pub args: Args,
+	pub proj_dirs: Option<ProjectDirs>,
 }
 
-#[derive(ValueEnum, Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub enum ConfigFiletype {
-	#[default]
-	Toml,
-	Json,
-	Yaml,
+impl Cli {
+	pub fn new() -> Self {
+		let args = Args::parse();
+		let proj_dirs = ProjectDirs::from("net", "LunaPresent", "lrxed");
+		Self { args, proj_dirs }
+	}
+
+	pub fn config_path(&self) -> Option<PathBuf> {
+		Some(self.proj_dirs.as_ref()?.config_dir().join("config"))
+	}
+}
+
+const VERSION_MESSAGE: &str = concat!(
+	env!("CARGO_PKG_VERSION"),
+	"-",
+	env!("VERGEN_GIT_DESCRIBE"),
+	" (",
+	env!("VERGEN_BUILD_DATE"),
+	")"
+);
+
+fn version() -> String {
+	let author = clap::crate_authors!();
+
+	format!(
+		"\
+{VERSION_MESSAGE}
+
+Authors: {author}"
+	)
 }

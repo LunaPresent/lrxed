@@ -1,0 +1,94 @@
+[keys.global]
+key-help = ["?", "<C-h>"]
+quit = "q"
+confirm = "<enter>"
+cancel = "<esc>"
+cursor-left = ["h", "<Left>"]
+cursor-down = ["j", "<Down>"]
+cursor-up = ["k", "<Up>"]
+cursor-right = ["l", "<Right>"]
+cursor-top = ["gg", "go"]
+cursor-bottom = "G"
+cursor-start = ["_", "<home>"]
+cursor-end = ["$", "<end>"]
+scroll-down = "<C-e>"
+scroll-up = "<C-y>"
+scroll-half-page-down = "<C-d>"
+scroll-half-page-up = "<C-u>"
+scroll-full-page-down = "<C-f>"
+scroll-full-page-up = "<C-b>"
+
+[keys.editor]
+save = "<C-s>"
+undo = "u"
+redo = "<C-r>"
+cursor-to-playing = "t"
+cursor-to-playing-line = "T"
+seek-to-cursor = "f"
+seek-to-cursor-line = "F"
+sync = " "
+open-in-editor = "I"
+"seek 0%" = "0"
+"seek 10%" = "1"
+"seek 20%" = "2"
+"seek 30%" = "3"
+"seek 40%" = "4"
+"seek 50%" = "5"
+"seek 60%" = "6"
+"seek 70%" = "7"
+"seek 80%" = "8"
+"seek 90%" = "9"
+"play toggle" = "r"
+"vol -10" = "["
+"vol +10" = "]"
+"vol -1" = "{"
+"vol +1" = "}"
+"spd -5" = "-"
+"spd +5" = "+"
+"spd =100" = "="
+"time +1s" = "s"
+"time -1s" = "S"
+"time +100ms" = "d"
+"time -100ms" = "D"
+"time +10ms" = "c"
+"time -10ms" = "C"
+
+[keys.confirm-box]
+yes = "y"
+no = "n"
+cancel = "c"
+
+[keys.file-browser]
+leave-directory = ["<esc>", "h", "<left>"]
+open-file-or-directory = ["<enter>", "l", "<right>"]
+
+[theme.colours]
+# based on catppuccin mocha
+background = "#1e1e2e"
+overlay = "#313244"
+accent = "#f5c2e7"
+border-error = "#f38ba8"
+border-info = "#89b4fa"
+border-warn = "#f9e2af"
+[theme.styles]
+button-active = {fg = "#89b4fa", bg = "#313244"}
+button-inactive = {bg = "#313244"}
+text-primary = {fg = "#cdd6f4"}
+text-secondary = {fg = "#a6adc8"}
+title = {fg = "#f5c2e7", bold = true}
+cursor-line = {bg = "#313244"}
+lyrics-line = {bold = true}
+
+[theme.file-browser.styles]
+parent-directory = {fg = "#a6e3a1"}
+directory = {fg = "#89b4fa"}
+file = {fg = "#cdd6f4"}
+highlight-file = {fg = "#313244", bg = "#a6adc8"}
+highlight-directory = {fg = "#313244", bg = "#89b4fa"}
+
+[settings]
+scrolloff = 8
+#default-path = "/path/to/music"
+replace-txt-file-on-save = false
+notification-timeout = 5
+sync-offset = 0
