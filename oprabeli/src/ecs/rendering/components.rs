@@ -6,8 +6,20 @@ use ratatui::layout::{Position, Rect, Size};
 use super::ViewportError;
 
 // TODO: documentation
-#[derive(Debug, Component, Default, Clone, Copy, Deref, DerefMut)]
-pub struct Area(pub Rect);
+#[derive(Debug, Component, Default, Clone, Copy)]
+pub struct EcsWidget {
+	pub area: Rect,
+}
+
+impl EcsWidget {
+	pub fn render(&mut self, area: Rect) {
+		self.area = area;
+	}
+}
+
+/// Marker component to disable automatic widget size resetting
+#[derive(Debug, Component, Clone, Copy)]
+pub struct RetainRender;
 
 /// The relative z-order of a [UI component][u]
 ///
@@ -31,7 +43,7 @@ pub struct ZOrder(pub u16);
 
 // TODO: documentation
 #[derive(Debug, Component, Default)]
-#[require(Area)]
+#[require(EcsWidget)]
 pub struct Viewport {
 	pub(crate) buf: Buffer,
 	pub offset: Position,

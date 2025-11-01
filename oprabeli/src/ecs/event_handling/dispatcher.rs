@@ -200,7 +200,7 @@ where
 		),
 		mut clicked: Local<Option<Entity>>,
 		root_entities: Query<Entity, Without<ChildOf>>,
-		areas: Query<(Option<&Area>, Option<&Children>, Option<&Viewport>)>,
+		areas: Query<(Option<&EcsWidget>, Option<&Children>, Option<&Viewport>)>,
 		systems: Query<&EventSystemCollection<T>>,
 		parents: Query<&ChildOf>,
 	) -> eyre::Result<()> {
@@ -252,7 +252,7 @@ where
 		x: u16,
 		y: u16,
 		root_entities: Query<Entity, Without<ChildOf>>,
-		areas: Query<(Option<&Area>, Option<&Children>, Option<&Viewport>)>,
+		areas: Query<(Option<&EcsWidget>, Option<&Children>, Option<&Viewport>)>,
 	) -> eyre::Result<Option<Entity>> {
 		for entity in root_entities {
 			if let Some(target) = Self::find_cursor_target_inner(Position { x, y }, entity, areas)?
@@ -276,26 +276,26 @@ where
 	fn find_cursor_target_inner(
 		mut pos: Position,
 		entity: Entity,
-		areas: Query<(Option<&Area>, Option<&Children>, Option<&Viewport>)>,
+		widgets: Query<(Option<&EcsWidget>, Option<&Children>, Option<&Viewport>)>,
 	) -> eyre::Result<Option<Entity>> {
-		let (area, children, viewport) = areas.get(entity)?;
-		if let Some(area) = area
-			&& !area.contains(pos)
+		let (widget, children, viewport) = widgets.get(entity)?;
+		if let Some(widget) = widget
+			&& !widget.area.contains(pos)
 		{
 			Ok(None)
 		} else {
-			if let (Some(area), Some(viewport)) = (area, viewport) {
-				pos.x = pos.x - area.x + viewport.offset.x;
-				pos.y = pos.y - area.y + viewport.offset.y;
+			if let (Some(widget), Some(viewport)) = (widget, viewport) {
+				pos.x = pos.x - widget.area.x + viewport.offset.x;
+				pos.y = pos.y - widget.area.y + viewport.offset.y;
 			}
 			if let Some(children) = children {
 				for &child in children {
-					if let Some(target) = Self::find_cursor_target_inner(pos, child, areas)? {
+					if let Some(target) = Self::find_cursor_target_inner(pos, child, widgets)? {
 						return Ok(Some(target));
 					}
 				}
 			}
-			if area.is_some() {
+			if widget.is_some() {
 				Ok(Some(entity))
 			} else {
 				Ok(None)

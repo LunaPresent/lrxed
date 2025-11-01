@@ -49,8 +49,8 @@ impl FpsComponent {
 		interval
 	}
 
-	fn render(context: RenderContext, mut query: Query<(&mut Self, &Area)>) -> eyre::Result<()> {
-		let (mut comp, &Area(area)) = query.get_mut(context.entity)?;
+	fn render(context: RenderContext, mut query: Query<&mut Self>) -> eyre::Result<()> {
+		let mut comp = query.get_mut(context.entity)?;
 
 		let interval = comp.record_frame().as_secs_f64();
 		let fps = Span::from(format!(
@@ -62,7 +62,7 @@ impl FpsComponent {
 		let flex_vertical = Self::i16_to_flex(comp.position.y());
 		let [area] = Layout::horizontal([Constraint::Length(fps.width() as u16)])
 			.flex(flex_horizontal)
-			.areas(area);
+			.areas(context.area);
 		let [area] = Layout::vertical([Constraint::Length(1)])
 			.flex(flex_vertical)
 			.areas(area);

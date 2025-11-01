@@ -2,6 +2,7 @@ use bevy_ecs::component::{Component, Mutable};
 use bevy_ecs::entity::Entity;
 use bevy_ecs::system::SystemInput;
 use ratatui::buffer::Buffer;
+use ratatui::layout::Rect;
 
 use super::*;
 use crate::ecs::EventFlow;
@@ -61,6 +62,7 @@ where
 #[derive(Debug)]
 pub struct RenderContext<'a> {
 	pub entity: Entity,
+	pub area: Rect,
 	pub buffer: &'a mut Buffer,
 }
 

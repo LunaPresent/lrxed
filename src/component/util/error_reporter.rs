@@ -9,7 +9,6 @@ use oprabeli::ecs::*;
 use oprabeli::ratatui::layout::{Constraint, Flex, Layout};
 
 use super::ErrorPopupComponent;
-use crate::app_event::AppEvent;
 use crate::config::Settings;
 
 #[derive(Debug, Component, Default)]
@@ -22,7 +21,6 @@ pub struct ErrorReporterComponent {
 impl UiComponent for ErrorReporterComponent {
 	fn systems() -> impl IntoIterator<Item = UiSystem> {
 		[
-			UiSystem::new(Self::update),
 			UiSystem::new(Self::render),
 			UiSystem::new(Self::handle_error),
 		]
@@ -34,31 +32,22 @@ impl ErrorReporterComponent {
 		Self::default()
 	}
 
-	fn update(context: EventContext<AppEvent>) -> eyre::Result<EventFlow> {
-		if let AppEvent::TestError(s) = context.event {
-			Err(eyre::eyre!(s.clone()))
-		} else {
-			Ok(EventFlow::Propagate)
-		}
-	}
-
 	fn render(
 		context: RenderContext,
 		query: Query<&Self>,
-		mut areas: Query<&mut Area>,
+		mut widgets: Query<&mut EcsWidget>,
 	) -> eyre::Result<()> {
 		let comp = query.get(context.entity)?;
-		let area = **areas.get(context.entity)?;
 		let [error_area] = Layout::horizontal([Constraint::Max(60)])
 			.flex(Flex::End)
-			.areas(area);
+			.areas(context.area);
 		let error_areas = Layout::vertical(core::iter::repeat_n(
 			Constraint::Max(7),
 			comp.error_popups.len(),
 		))
 		.split(error_area);
 		for (&error_popup, &area) in comp.error_popups.iter().zip(error_areas.iter()) {
-			**areas.get_mut(error_popup)? = area;
+			widgets.get_mut(error_popup)?.render(area);
 		}
 		Ok(())
 	}

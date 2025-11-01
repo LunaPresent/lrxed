@@ -52,14 +52,9 @@ impl ErrorPopupComponent {
 		Ok(EventFlow::Propagate)
 	}
 
-	fn render(
-		context: RenderContext,
-		theme: Res<Theme>,
-		query: Query<(&Self, &Area)>,
-	) -> eyre::Result<()> {
-		let (comp, area) = query.get(context.entity)?;
-		let area = **area;
-		Clear.render(area, context.buffer);
+	fn render(context: RenderContext, theme: Res<Theme>, query: Query<&Self>) -> eyre::Result<()> {
+		let comp = query.get(context.entity)?;
+		Clear.render(context.area, context.buffer);
 		Paragraph::new(comp.error_msg.as_str())
 			.block(
 				Block::bordered()
@@ -67,7 +62,7 @@ impl ErrorPopupComponent {
 					.border_type(BorderType::Rounded),
 			)
 			.bg(theme.colours.background)
-			.render(area, context.buffer);
+			.render(context.area, context.buffer);
 
 		Ok(())
 	}

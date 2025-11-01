@@ -5,7 +5,7 @@ use bevy_ecs::system::SystemId;
 use smallvec::SmallVec;
 
 use super::*;
-use crate::ecs::Area;
+use crate::ecs::EcsWidget;
 use crate::ecs::error_handling::UiSystemError;
 
 const N: usize = 3;
@@ -49,7 +49,7 @@ impl<T> UiSystemCollection for EventSystemCollection<T> {
 }
 
 #[derive(Debug, Component, Default, Clone, derive_more::Deref, derive_more::DerefMut)]
-#[require(Area)]
+#[require(EcsWidget)]
 pub(crate) struct RenderSystemCollection(SmallVec<[RenderSystemId; N]>);
 
 impl UiSystemCollection for RenderSystemCollection {
@@ -58,7 +58,7 @@ impl UiSystemCollection for RenderSystemCollection {
 }
 
 #[derive(Debug, Component, Clone, derive_more::Deref, derive_more::DerefMut)]
-#[require(Area)]
+#[require(EcsWidget)]
 pub(crate) struct ErrorSystemCollection<E>(SmallVec<[ErrorSystemId<E>; N]>)
 where
 	E: 'static;

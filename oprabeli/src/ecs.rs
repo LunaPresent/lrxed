@@ -13,7 +13,7 @@ pub use entity_commands_ext::EntityCommandsExt;
 pub use error_handling::ErrorFlow;
 pub(crate) use event_handling::DynEventDispatch;
 pub use event_handling::{AsyncEventQueue, EventFlow, EventQueue, Focus};
-pub use rendering::{Area, Viewport, ZOrder};
+pub use rendering::{EcsWidget, RetainRender, Viewport, ZOrder};
 pub use signal::Signal;
 pub use ui_component::{
 	ErrorContext, EventContext, InitContext, RenderContext, UiComponent, UiSystem,

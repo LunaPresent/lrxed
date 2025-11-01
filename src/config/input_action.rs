@@ -19,6 +19,7 @@ pub enum InputAction {
 pub enum StaticInputAction {
 	KeyHelp,
 	Quit,
+	Suspend,
 	Confirm,
 	Cancel,
 	Yes,
@@ -67,6 +68,7 @@ impl StaticInputAction {
 		match self {
 			Self::KeyHelp => AppEvent::KeyHelp,
 			Self::Quit => AppEvent::Quit,
+			Self::Suspend => AppEvent::Suspend,
 			Self::Confirm => AppEvent::Confirm,
 			Self::Cancel => AppEvent::Cancel,
 			Self::Yes => AppEvent::Yes,

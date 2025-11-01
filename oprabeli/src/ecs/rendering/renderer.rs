@@ -9,7 +9,7 @@ use bevy_ecs::world::World;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 
-use super::{Area, Viewport, ViewportError, ZOrder};
+use super::{EcsWidget, RetainRender, Viewport, ViewportError, ZOrder};
 use crate::ecs::error_handling::UiSystemResultExt as _;
 use crate::ecs::{BevyErrorWrapper, ui_component::*};
 
@@ -43,7 +43,10 @@ impl Renderer {
 		}
 		self.viewport_count = 0;
 		world
-			.run_system_once_with(Self::set_area_sizes, area)
+			.run_system_once(Self::reset_widget_sizes)
+			.map_err(BevyErrorWrapper::from)?;
+		world
+			.run_system_once_with(Self::render_roots, area)
 			.map_err(BevyErrorWrapper::from)?;
 		world
 			.run_system_once_with(Self::find_render_targets, self)
@@ -62,9 +65,19 @@ impl Renderer {
 		Ok(())
 	}
 
-	fn set_area_sizes(In(frame_area): In<Rect>, areas: Query<&mut Area, Without<ChildOf>>) {
-		for mut area in areas {
-			**area = frame_area;
+	fn reset_widget_sizes(widgets: Query<&mut EcsWidget, Without<RetainRender>>) {
+		for mut widget in widgets {
+			widget.area.width = 0;
+			widget.area.height = 0;
+		}
+	}
+
+	fn render_roots(
+		In(frame_area): In<Rect>,
+		root_widgets: Query<&mut EcsWidget, Without<ChildOf>>,
+	) {
+		for mut widget in root_widgets {
+			widget.render(frame_area);
 		}
 	}
 
@@ -155,11 +168,16 @@ impl Renderer {
 	) -> eyre::Result<()> {
 		for render_info in &self.queues_per_viewport[queue_idx] {
 			if let Some(system) = render_info.system {
+				let area = world
+					.get::<EcsWidget>(render_info.entity)
+					.expect("an entity with a render system should always have an EcsWidget")
+					.area;
 				world
 					.run_system_with(
 						system,
 						RenderContext {
 							entity: render_info.entity,
+							area,
 							buffer: buf,
 						},
 					)?
@@ -191,11 +209,11 @@ impl Renderer {
 
 	fn cleanup_viewport(
 		(In(entity), InMut(buf)): (In<Entity>, InMut<Buffer>),
-		mut query: Query<(&mut Viewport, &Area)>,
+		mut query: Query<(&mut Viewport, &EcsWidget)>,
 	) -> Result<(), ViewportError> {
-		let (mut viewport, area) = query.get_mut(entity).map_err(|_| ViewportError::Missing)?;
+		let (mut viewport, widget) = query.get_mut(entity).map_err(|_| ViewportError::Missing)?;
 		mem::swap(&mut viewport.buf, buf);
-		Self::combine_viewports(buf, &viewport, **area)?;
+		Self::combine_viewports(buf, &viewport, widget.area)?;
 		Ok(())
 	}
 
